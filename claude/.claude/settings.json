@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "defaultMode": "auto"
+  },
+  "model": "claude-fable-5[1m]",
+  "language": "Polish",
+  "tui": "fullscreen",
+  "theme": "dark",
+  "editorMode": "vim",
+  "outputStyle": "Direct"
+}

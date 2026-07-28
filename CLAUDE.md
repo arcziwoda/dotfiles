@@ -1,11 +1,12 @@
 # Dotfiles — Artur
 
-Repozytorium konfiguracji środowiska na macOS. Zarządzane przez **GNU Stow**: pliki w tym repo są symlinkowane do `$HOME` (`stow .` z katalogu repo). Struktura katalogów odzwierciedla 1:1 strukturę względem `$HOME` (np. `.config/tmux/tmux.conf` → `~/.config/tmux/tmux.conf`).
+Repozytorium konfiguracji środowiska na macOS. Zarządzane przez **GNU Stow** w układzie **per-pakiet**: każdy katalog najwyższego poziomu (np. `zsh/`, `tmux/`, `claude/`) to pakiet, którego zawartość odzwierciedla strukturę względem `$HOME` (np. `tmux/.config/tmux/tmux.conf` → `~/.config/tmux/tmux.conf`). Instalacja: `stow <pakiet>` (opcje w `.stowrc`: target `$HOME`, `--no-folding`).
 
 ## Zasady pracy w tym repo
 
-- **Nie edytuj plików w `$HOME` bezpośrednio** — edytuj je tutaj (symlinki i tak wskazują na repo, ale nowe pliki twórz zawsze w repo, potem `stow .`).
-- Pliki meta (README, CLAUDE.md, docs/, Brewfile itp.) muszą być wpisane do `.stow-local-ignore`, żeby nie trafiały jako symlinki do `$HOME`.
+- **Nie edytuj plików w `$HOME` bezpośrednio** — edytuj je tutaj; nowe pliki twórz zawsze w pakiecie w repo, potem `stow <pakiet>`.
+- Pliki meta (README, CLAUDE.md, docs/, Brewfile) leżą w root repo — Stow ich nie dotyka, bo nie są pakietem. Nie twórz pakietu o nazwie kolidującej z meta-plikami.
+- W pakiecie `claude/` trzymamy TYLKO config Claude Code (`settings.json`, `CLAUDE.md`, `output-styles/`, ew. `agents/`, `skills/`, `keybindings.json`). Nigdy nie dodawaj do repo stanu sesji z `~/.claude` (projects/, history.jsonl, sessions/, cache, shell-snapshots, backups, `.credentials*`) ani `~/.claude.json`.
 - Nowe oprogramowanie instaluj przez Homebrew i dopisuj do `Brewfile`.
 - Komunikacja z użytkownikiem po polsku; komentarze/commity po angielsku.
 - Commituj małymi krokami z sensownymi opisami; nie pushuj bez wyraźnej prośby.

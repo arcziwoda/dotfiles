@@ -1,8 +1,0 @@
-\.git
-\.gitignore
-\.stow-local-ignore
-^/README.*
-^/CLAUDE\.md
-^/docs
-^/Brewfile.*
-^/LICENSE.*
