@@ -23,6 +23,12 @@ setopt INTERACTIVE_COMMENTS    # allow # comments when pasting commands
 setopt NO_BEEP
 
 # ── Completion ─────────────────────────────────────────────────────────
+# Some oh-my-zsh plugins loaded via antidote (docker) generate completions into
+# $ZSH_CACHE_DIR/completions — a framework variable that has to exist here.
+export ZSH_CACHE_DIR="$XDG_CACHE_HOME/zsh"
+mkdir -p "$ZSH_CACHE_DIR/completions"
+fpath=("$ZSH_CACHE_DIR/completions" $fpath)
+
 _zcompdump="$XDG_CACHE_HOME/zsh/zcompdump"
 [[ -d ${_zcompdump:h} ]] || mkdir -p ${_zcompdump:h}
 autoload -Uz compinit

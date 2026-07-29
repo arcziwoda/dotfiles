@@ -9,6 +9,13 @@
 jeffreytse/zsh-vi-mode
 MichaelAquilina/zsh-you-should-use
 MichaelAquilina/zsh-autoswitch-virtualenv
+
+# Individual oh-my-zsh plugins, without the framework: the git and docker alias
+# packs from the old setup (gcmsg, gst, dpu, …). lib/git.zsh provides the
+# helper functions (git_current_branch etc.) some git aliases expand to.
+ohmyzsh/ohmyzsh path:lib/git.zsh
+ohmyzsh/ohmyzsh path:plugins/git
+ohmyzsh/ohmyzsh path:plugins/docker
 Aloxaf/fzf-tab
 zsh-users/zsh-autosuggestions
 catppuccin/zsh-syntax-highlighting path:themes/catppuccin_macchiato-zsh-syntax-highlighting.zsh
