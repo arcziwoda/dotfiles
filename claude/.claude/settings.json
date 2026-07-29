@@ -7,5 +7,6 @@
   "tui": "fullscreen",
   "theme": "dark",
   "editorMode": "vim",
-  "outputStyle": "Direct"
+  "outputStyle": "Direct",
+  "skipWorkflowUsageWarning": true
 }
