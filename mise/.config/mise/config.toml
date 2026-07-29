@@ -1,0 +1,12 @@
+# Global runtime versions. Override per project with a local mise.toml
+# (`mise use python@3.12`), which takes precedence over this file.
+[tools]
+python = "3.13"          # latest 3.13.x; 3.14 exists but 3.13 has wider library support
+node = "lts"             # needed by the TypeScript, JSON, YAML and Docker language servers
+java = "temurin-25"      # LTS; jdtls requires JDK 17+
+
+[settings]
+# Trust project configs only after `mise trust`, so cloning a repo cannot
+# silently run its tool setup.
+paranoid = false
+idiomatic_version_file_enable_tools = ["python"]   # honour .python-version files

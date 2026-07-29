@@ -27,6 +27,13 @@ brew "difftastic"                  # structural diff, via `diff` and `git dft`
 brew "git-delta"                   # git pager
 brew "lazygit"
 
+# ── Editor ─────────────────────────────────────────────────────────────
+brew "neovim"                      # 0.12.x
+brew "tree-sitter-cli"             # required by nvim-treesitter's main branch.
+                                   # NOT the `tree-sitter` formula — that is the
+                                   # library only and ships no binary.
+brew "luajit"
+
 # ── Containers ─────────────────────────────────────────────────────────
 cask "orbstack"                    # Docker/Linux VMs, lighter than Docker Desktop
 

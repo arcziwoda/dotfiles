@@ -26,6 +26,12 @@ macos-titlebar-style = tabs
 window-save-state = never
 window-colorspace = display-p3
 
+# Translucent background with blur behind it. 0.9 keeps text contrast intact;
+# go lower only if you also raise the blur. Neovim's colourscheme is
+# transparent to match, so this is what shows through in the editor too.
+background-opacity = 0.9
+background-blur = 20
+
 # ── Cursor & mouse ─────────────────────────────────────────────────────
 cursor-style = block
 cursor-style-blink = false
