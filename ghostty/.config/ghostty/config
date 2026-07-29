@@ -7,7 +7,7 @@ theme = Catppuccin Macchiato
 
 # ── Font ───────────────────────────────────────────────────────────────
 font-family = JetBrainsMono Nerd Font
-font-size = 14
+font-size = 16
 # macOS dropped subpixel antialiasing; this compensates.
 font-thicken = true
 
