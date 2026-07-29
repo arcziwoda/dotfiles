@@ -67,9 +67,9 @@ Configi edytuj **w repo** — symlinki w `$HOME` wskazują tutaj. Po dodaniu *no
 | `Ctrl-R` / `Ctrl-T` / `Alt-C` | historia / pliki / katalogi przez fzf |
 | `NO_AUTO_TMUX=1` | shell bez automatycznego wejścia w tmuxa |
 
+Picker sesji jest jednym skryptem — `bin/.local/bin/tmux-sessions` — używanym przez wszystkie trzy wejścia, więc zachowują się identycznie: lista zawiera tylko żywe sesje tmuxa, a wpisanie nieistniejącej nazwy tworzy sesję. Poza tmuxem skrypt podłącza się do sesji, wewnątrz przełącza klienta.
+
 ## Dokumentacja
 
 - [docs/research-2026.md](docs/research-2026.md) — dlaczego te narzędzia, co odrzucone, co obserwować
 - [docs/old-setup.md](docs/old-setup.md) — poprzedni setup (2025) jako punkt odniesienia
-
-Picker sesji jest jednym skryptem — `bin/.local/bin/tmux-sessions` — używanym przez wszystkie trzy wejścia, więc zachowują się identycznie: lista zawiera tylko żywe sesje tmuxa, a wpisanie nieistniejącej nazwy tworzy sesję. Poza tmuxem skrypt podłącza się do sesji, wewnątrz przełącza klienta.
