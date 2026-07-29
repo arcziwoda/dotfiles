@@ -36,3 +36,5 @@ Repozytorium konfiguracji środowiska na macOS. Zarządzane przez **GNU Stow** w
 - tmux-fingers nie parsuje kolorów hex — tylko nazwy ANSI.
 - Brewfile potrzebuje `tree-sitter-cli`, nie `tree-sitter` (ta druga formuła to sama biblioteka, bez binarki).
 - `zsh/.config/zsh/sesh.zsh` kończy się `exec` przy starcie poza tmuxem — musi być sourcowany **na końcu** `.zshrc`.
+- **Nigdy nie uruchamiaj `tmux kill-server`** ani nie usuwaj `~/.local/share/tmux/resurrect` — to zabija żywe sesje użytkownika i jego zapisany stan. Config testuj na osobnym sockecie (`tmux -L test new-session -d`), a zmiany wprowadzaj przez `tmux source-file ~/.config/tmux/tmux.conf` albo `prefix R`.
+- Nawigacja panelami jest na **Alt**+hjkl, nie Ctrl — vim-tmux-navigator domyślnie zabiera `C-l` w root-table i psuje clear w shellu. Przesuwanie linii w nvimie przeniesione z `A-j/A-k` na `A-J/A-K`.

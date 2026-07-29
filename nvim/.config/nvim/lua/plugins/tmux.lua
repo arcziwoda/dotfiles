@@ -1,5 +1,9 @@
--- Ctrl-h/j/k/l moves between Neovim splits and tmux panes interchangeably.
+-- Alt-h/j/k/l moves between Neovim splits and tmux panes interchangeably.
 -- The tmux half is declared in ~/.config/tmux/tmux.conf; both sides are needed.
+--
+-- The keymaps live in lua/config/keymaps.lua, not here: LazyVim binds <A-j> and
+-- <A-k> to "move line" and its defaults load after lazy registers plugin keys,
+-- so declaring them here would lose the race. Only the lazy-load trigger stays.
 return {
   {
     "christoomey/vim-tmux-navigator",
@@ -9,12 +13,6 @@ return {
       "TmuxNavigateUp",
       "TmuxNavigateRight",
       "TmuxNavigatePrevious",
-    },
-    keys = {
-      { "<C-h>", "<cmd>TmuxNavigateLeft<cr>", desc = "Go to left window" },
-      { "<C-j>", "<cmd>TmuxNavigateDown<cr>", desc = "Go to lower window" },
-      { "<C-k>", "<cmd>TmuxNavigateUp<cr>", desc = "Go to upper window" },
-      { "<C-l>", "<cmd>TmuxNavigateRight<cr>", desc = "Go to right window" },
     },
   },
 }

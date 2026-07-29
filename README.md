@@ -61,7 +61,9 @@ Configi edytuj **w repo** — symlinki w `$HOME` wskazują tutaj. Po dodaniu *no
 | `prefix` = `C-a`, `prefix s` | picker sesji w popupie |
 | `prefix g` | lazygit w popupie |
 | `prefix F` | kopiowanie po podpowiedziach (tmux-fingers) |
-| `C-h/j/k/l` | ruch między panelami tmuxa i splitami nvima |
+| `Alt-h/j/k/l` | ruch między panelami tmuxa i splitami nvima |
+| `Alt-Shift-j/k` | przesuwanie linii w nvimie (domyślnie w LazyVim `Alt-j/k`) |
+| `Ctrl-L` | clear — celowo nieprzejęty przez nawigację |
 | `Ctrl-R` / `Ctrl-T` / `Alt-C` | historia / pliki / katalogi przez fzf |
 | `NO_AUTO_TMUX=1` | shell bez automatycznego wejścia w tmuxa |
 
