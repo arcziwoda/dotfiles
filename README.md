@@ -56,9 +56,9 @@ Configi edytuj **w repo** — symlinki w `$HOME` wskazują tutaj. Po dodaniu *no
 
 | Skrót | Działanie |
 |---|---|
-| terminal start | picker sesji tmuxa; detach zamyka okno |
-| `Alt-s` | picker sesji z wnętrza shella |
-| `prefix` = `C-a`, `prefix s` | picker sesji w popupie |
+| terminal start | picker sesji; detach zamyka okno, Esc daje zwykły shell |
+| `Alt-s` | ten sam picker z wnętrza shella |
+| `prefix` = `C-a`, `prefix s` | ten sam picker w popupie |
 | `prefix g` | lazygit w popupie |
 | `prefix F` | kopiowanie po podpowiedziach (tmux-fingers) |
 | `Alt-h/j/k/l` | ruch między panelami tmuxa i splitami nvima |
@@ -71,3 +71,5 @@ Configi edytuj **w repo** — symlinki w `$HOME` wskazują tutaj. Po dodaniu *no
 
 - [docs/research-2026.md](docs/research-2026.md) — dlaczego te narzędzia, co odrzucone, co obserwować
 - [docs/old-setup.md](docs/old-setup.md) — poprzedni setup (2025) jako punkt odniesienia
+
+Picker sesji jest jednym skryptem — `bin/.local/bin/tmux-sessions` — używanym przez wszystkie trzy wejścia, więc zachowują się identycznie: lista zawiera tylko żywe sesje tmuxa, a wpisanie nieistniejącej nazwy tworzy sesję. Poza tmuxem skrypt podłącza się do sesji, wewnątrz przełącza klienta.

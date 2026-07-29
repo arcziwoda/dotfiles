@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Session picker: live tmux sessions only, and typing a name that does not
+# exist creates it. Single implementation shared by all three entry points:
+#
+#   - terminal start   .zshrc runs `exec tmux-sessions`, so detaching from tmux
+#                      ends the process and closes the window
+#   - Alt-s            from inside a shell, no exec
+#   - prefix s         from inside tmux, in a popup
+#
+# Attaches when run outside tmux, switches the client when run inside it.
+set -uo pipefail
+
+RESURRECT_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/resurrect"
+
+# Outside tmux there may be no server yet — after a reboot there certainly is
+# not. Starting one sources tmux.conf, and that is what makes tmux-continuum
+# restore the last saved state, so the sessions show up in the list below.
+# It restores in the background, hence the wait; skip waiting when there is
+# nothing saved to restore.
+if [[ -z ${TMUX:-} ]] && ! tmux list-sessions >/dev/null 2>&1; then
+	tmux start-server 2>/dev/null
+	if [[ -e "$RESURRECT_DIR/last" ]]; then
+		for _ in $(seq 1 24); do
+			tmux list-sessions >/dev/null 2>&1 && break
+			sleep 0.25
+		done
+	fi
+fi
+
+# Inside a tmux popup the picker owns the whole surface.
+height=60%
+[[ -n ${TMUX:-} ]] && height=100%
+
+choice=$(
+	sesh list -t --icons | fzf \
+		--ansi \
+		--print-query \
+		--accept-nth '2..' \
+		--height "$height" --reverse --border --border-label ' sessions ' \
+		--prompt '⚡ ' \
+		--preview 'sesh preview {2..}' \
+		--preview-window 'right:55%,border-left' \
+		--bind 'tab:down,btab:up'
+)
+
+# --print-query prints the typed text first and the accepted match, if any, on
+# the following line, so the last line is the choice either way. --accept-nth
+# drops the icon column; --ansi makes fzf interpret sesh's colour codes rather
+# than printing them as text.
+name=${choice##*$'\n'}
+
+# Nothing typed and nothing picked: leave things as they are.
+[[ -n $name ]] || exit 1
+
+# Exact match. `tmux has-session -t=NAME` is not usable here — it still matches
+# prefixes, so a new session named "api" would attach to an existing
+# "api-gateway" instead of being created.
+if tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -qxF -- "$name"; then
+	# sesh attaches or switches depending on whether we are already in tmux.
+	exec sesh connect "$name"
+fi
+
+if [[ -n ${TMUX:-} ]]; then
+	tmux new-session -d -s "$name"
+	exec tmux switch-client -t "$name"
+else
+	exec tmux new-session -s "$name"
+fi
