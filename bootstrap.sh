@@ -12,7 +12,7 @@ brew bundle --file="$DOTFILES/Brewfile"
 
 echo "==> Stow packages"
 cd "$DOTFILES"
-stow claude ghostty zsh starship fzf bat eza tmux sesh nvim mise
+stow claude ghostty zsh starship fzf bat eza tmux sesh nvim mise git
 
 echo "==> bat theme cache"
 bat cache --build >/dev/null

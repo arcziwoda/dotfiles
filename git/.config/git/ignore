@@ -1,0 +1,32 @@
+# Global gitignore — git reads this path by default, no core.excludesFile needed.
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.nvim.lua
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Environments and secrets
+.env.local
+*.pem
+
+# Tooling
+.direnv/
+node_modules/

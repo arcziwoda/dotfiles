@@ -4,18 +4,22 @@ Stan na 2026-07-29. Synteza deep researchu (agenci weryfikowali wersje/daty prze
 
 ## Decyzje — TL;DR
 
-| Obszar | Było (2025) | Jest (2026) | Status |
-|---|---|---|---|
-| Zarządzanie dotfiles | GNU Stow, płaskie `stow .` | GNU Stow, **per-pakiet** (`stow zsh tmux ...`) + `.stowrc` | ✅ wdrożone |
-| Terminal | iTerm2 | **Ghostty 1.3.x** | propozycja |
-| Shell | zsh + oh-my-zsh (vendored) | **zsh + antidote + starship** (bez omz) | propozycja |
-| Prompt | omz theme "apple" | **starship** + paleta Catppuccin | propozycja |
-| Multiplekser | tmux + TPM | **tmux 3.7b + tpack** | propozycja |
-| Session manager | własny `tmux_session_manager` (zsh+fzf) | **sesh** | propozycja |
-| Theme tmux | catppuccin/tmux v1.0.2 | **catppuccin/tmux v2.3.0** (breaking, manual install) | propozycja |
-| Neovim | LazyVim (colorscheme vscode) | **LazyVim v16** (colorscheme catppuccin) | propozycja |
-| Python versions | pyenv | **mise** (rozważyć) | do decyzji |
-| Diff | difftastic | **delta** (pager) + difftastic (`git dft`) | propozycja |
+Wszystko poniżej jest **wdrożone** (2026-07-29).
+
+| Obszar | Było (2025) | Jest (2026) |
+|---|---|---|
+| Zarządzanie dotfiles | GNU Stow, płaskie `stow .` | GNU Stow, **per-pakiet** (`stow zsh tmux ...`) + `.stowrc` |
+| Terminal | iTerm2 | **Ghostty 1.3.1**, przezroczystość 0.9 + blur 20 |
+| Shell | zsh + oh-my-zsh (vendored) | **zsh + antidote** (start ~110 ms) |
+| Prompt | omz theme "apple" + `prompt_docker_host` | **starship** + paleta Catppuccin, `docker_context`, `»` |
+| Multiplekser | tmux + TPM | **tmux 3.7b + tpack** |
+| Session manager | własny `tmux_session_manager` (zsh+fzf) | **sesh** jako źródło listy + zachowane `exec` i `--print-query` |
+| Theme tmux | catppuccin/tmux v1.0.2 | **catppuccin/tmux v2.3.0**, instalacja ręczna, pin na tag |
+| Neovim | LazyVim (colorscheme vscode) | **LazyVim v16** (catppuccin macchiato, przezroczyste tło) |
+| Wersje runtime | pyenv + `JAVA_HOME` na sztywno | **mise**: python 3.13, node lts, java temurin-25 |
+| Diff | difftastic | **delta** (pager) + difftastic (`git dft`) |
+| Git | brak configu | tożsamość rozdzielona przez `includeIf gitdir:~/work/` |
+| macOS | ręcznie | `macos/defaults.sh` (klawiatura + Finder) |
 
 ---
 
@@ -133,10 +137,24 @@ Top 3 pułapki: (1) nazwa `catppuccin-nvim` vs `catppuccin`, (2) nazwy themes Gh
 6. Pakiet `git/` — `.gitconfig` z delta + `dft` alias; pakiet `starship/` — `starship.toml` z paletą.
 7. `macos/defaults.sh` — na końcu, przyrostowo.
 
-## Otwarte decyzje
+## Rozstrzygnięte decyzje
 
-- [ ] Ghostty vs Alacritty (rekomendacja: Ghostty — ligatury, natywność, wbudowany catppuccin)
-- [ ] mise vs pyenv (rekomendacja: mise, ale wymaga zmiany nawyków)
-- [ ] yazi — dodać do stacku?
-- [ ] atuin — odpuszczamy do czasu drugiej maszyny?
-- [ ] font: JetBrainsMono Nerd Font (jak dotąd?) czy inny
+- Terminal: **Ghostty** (ligatury, natywność macOS, wbudowany catppuccin).
+- Font: **JetBrainsMono Nerd Font**, 14 pt.
+- Motyw: **stały Macchiato** (bez auto light/dark — mniej ruchomych części w tmux i nvim).
+- Wersje runtime: **mise** zamiast pyenv.
+- Historia: **fzf Ctrl-R**; atuin dopiero gdyby pojawiła się druga maszyna.
+- Aliasy: `grep→rg` oraz `python→python3`/`pip→pip3` **odrzucone** (patrz §6 i old-setup).
+- Picker/explorer w nvimie: **domyślne snacks**, nie telescope/neo-tree.
+- Języki w nvimie: Python, Java, TypeScript/JS, Docker/YAML/JSON. **Haskell pominięty.**
+- Przezroczystość: **tak, w terminalu i w nvimie.**
+- resurrect/continuum: **zostają** (świadomie, mimo braku opieki) — bo tylko one odtwarzają stan po reboocie; sesh sam tego nie robi.
+- yazi, jj, fastfetch: **nie teraz** (jedna linijka w Brewfile, gdy będą potrzebne).
+
+## Do obserwacji
+
+- LazyVim — czy wróci aktywność jesienią 2026; jeśli nie i zacznie się psuć na nvim 0.13 → AstroNvim v6.
+- resurrect/continuum — otwarte bugi (nadpisanie zapisu pustym plikiem, zacięcie serwera). Zapis co 15 min ogranicza ryzyko.
+- eza — bus factor ~1; fallback `lsd`.
+- `display-popup -E` w tmuxie — maintainer zapowiada ograniczenie tej funkcji; następcą są natywne floating panes z 3.7.
+- Adres e-mail w `git/.gitconfig` to noreply GitHuba — do podmiany, jeśli wolisz prywatny adres. Ścieżka `~/work/` dla tożsamości firmowej musi istnieć, by `includeIf` zadziałał.

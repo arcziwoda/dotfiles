@@ -1,0 +1,78 @@
+[user]
+	name = Artur Kempiński
+	# GitHub's noreply address for the arcziwoda account: valid, linked to the
+	# account, and keeps a real address out of public commit history.
+	# Replace if you would rather commit under a personal address.
+	email = arcziwoda@users.noreply.github.com
+
+# Work identity applies only inside ~/work. Create that directory (or change
+# the path) and the include takes effect for every repo underneath it.
+[includeIf "gitdir:~/work/"]
+	path = ~/.config/git/config-work
+
+[init]
+	defaultBranch = main
+
+[core]
+	editor = nvim
+	pager = delta
+
+[interactive]
+	diffFilter = delta --color-only
+
+[include]
+	path = ~/.config/git/catppuccin.gitconfig
+
+[delta]
+	features = catppuccin-macchiato
+	navigate = true          # n / N to jump between files in a diff
+	line-numbers = true
+	hyperlinks = true
+
+[merge]
+	conflictstyle = zdiff3   # shows the common ancestor in conflicts
+
+[diff]
+	algorithm = histogram
+	colorMoved = default
+	# `git dft` opts into difftastic's structural diff for a single command;
+	# delta stays the default pager because it handles logs and blame too.
+	tool = difftastic
+
+[difftool "difftastic"]
+	cmd = difft "$LOCAL" "$REMOTE"
+
+[pager]
+	difftool = true
+
+[alias]
+	dft = -c diff.external=difft diff
+	s = status --short --branch
+	l = log --oneline --graph --decorate -20
+	last = log -1 --stat
+	unstage = restore --staged
+	amend = commit --amend --no-edit
+
+[push]
+	default = simple
+	autoSetupRemote = true   # `git push` on a new branch just works
+	followTags = true
+
+[pull]
+	rebase = true
+
+[fetch]
+	prune = true
+
+[rebase]
+	autosquash = true
+	autostash = true
+
+[rerere]
+	enabled = true           # remember how you resolved a conflict
+
+[column]
+	ui = auto
+
+[branch]
+	sort = -committerdate    # most recently used branches first
