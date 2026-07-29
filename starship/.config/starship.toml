@@ -8,8 +8,6 @@ $directory\
 $git_branch\
 $git_status\
 $python\
-$nodejs\
-$java\
 ${custom.docker_context}\
 $cmd_duration\
 $character"""
@@ -39,18 +37,11 @@ format = '([\[$all_status$ahead_behind\]]($style) )'
 [python]
 symbol = " "
 style = "yellow"
-# Shows the active virtualenv name — replaces autoswitch_virtualenv's own output.
-format = '[${symbol}(${version} )(\($virtualenv\) )]($style)'
-
-[nodejs]
-symbol = " "
-style = "green"
-format = '[$symbol($version )]($style)'
-
-[java]
-symbol = " "
-style = "peach"
-format = '[$symbol($version )]($style)'
+# Virtualenv name only, no $version: starship only computes variables the
+# format references, and getting the version means running the interpreter —
+# measured at ~30ms per prompt. Same reason the nodejs and java modules are
+# not in the prompt at all (java -version alone cost 32ms per prompt).
+format = '[${symbol}(\($virtualenv\) )]($style)'
 
 [docker_context]
 # Replaced by the custom module below. The built-in can only hide the contexts
