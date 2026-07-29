@@ -1,14 +1,30 @@
-# tmux session management. Successor to the old tmux_session_manager: same
-# flow (fzf list, type a name that does not exist to create it, `exec` so that
-# detaching closes the terminal), but the candidate list comes from sesh, so it
-# also contains projects declared in sesh.toml — including ones not currently
-# running, which is what makes it useful right after a reboot — and directories
-# from zoxide history.
+# tmux session management. Successor to the old tmux_session_manager: same flow
+# (fzf list, type a name that does not exist to create it, `exec` so detaching
+# closes the terminal), with tmux-resurrect/continuum providing persistence.
+#
+# The list contains live tmux sessions only — no predeclared projects, no
+# zoxide directory history.
 
 function tmux_session_manager() {
+  # After a reboot no server is running, so there would be nothing to list.
+  # Starting one sources tmux.conf, and that is what makes tmux-continuum
+  # restore the last saved state. The restore runs in the background, so wait
+  # for it — but only when there is actually a save file to restore from.
+  if ! tmux list-sessions >/dev/null 2>&1; then
+    tmux start-server 2>/dev/null
+    if [[ -e ${XDG_DATA_HOME:-$HOME/.local/share}/tmux/resurrect/last ]]; then
+      local i
+      for i in {1..24}; do
+        tmux list-sessions >/dev/null 2>&1 && break
+        sleep 0.25
+      done
+    fi
+  fi
+
   local choice name
   choice=$(
-    sesh list --icons | fzf \
+    sesh list -t --icons | fzf \
+      --ansi \
       --print-query \
       --accept-nth '2..' \
       --height 60% --reverse --border --border-label ' sessions ' \
@@ -19,24 +35,22 @@ function tmux_session_manager() {
   )
 
   # --print-query prints the typed text first and the accepted match, if any,
-  # on the following line — so the last line is the choice either way.
-  # --accept-nth drops the icon column, so what lands here is a bare name.
-  # Unlike the old script this does not strip whitespace, so names containing
-  # spaces survive.
+  # on the following line, so the last line is the choice either way.
+  # --accept-nth drops the icon column; --ansi makes fzf interpret sesh's
+  # colour codes instead of printing them as text.
   name=${choice##*$'\n'}
 
-  # Esc with an empty filter: fall back to the default session rather than
-  # leaving the terminal with nothing.
-  [[ -z $name ]] && name=default
+  # Nothing typed and nothing picked: stay in a plain shell rather than
+  # inventing a session name.
+  [[ -z $name ]] && return
 
+  # Exact match against the session list. `tmux has-session -t=NAME` is not
+  # usable here: it still matches prefixes, so a new session named "api" would
+  # silently attach to an existing "api-gateway".
+  #
   # Both branches `exec`, so this shell is replaced: detaching from tmux ends
   # the process and the terminal window closes.
-  #
-  # sesh only connects to what it already knows — live sessions, sesh.toml
-  # entries, zoxide directories. A name typed from scratch, which is the whole
-  # point of --print-query, it rejects outright, so create that directly the
-  # way the old script did.
-  if sesh list | grep -qxF -- "$name"; then
+  if tmux list-sessions -F '#{session_name}' 2>/dev/null | grep -qxF -- "$name"; then
     exec sesh connect "$name"
   else
     exec tmux new-session -s "$name"

@@ -1,8 +1,5 @@
 [user]
 	name = Artur Kempiński
-	# GitHub's noreply address for the arcziwoda account: valid, linked to the
-	# account, and keeps a real address out of public commit history.
-	# Replace if you would rather commit under a personal address.
 	email = arcziwoda@users.noreply.github.com
 
 # Work identity applies only inside ~/work. Create that directory (or change
