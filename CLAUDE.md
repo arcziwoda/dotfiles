@@ -38,6 +38,7 @@ Repozytorium konfiguracji środowiska na macOS. Zarządzane przez **GNU Stow** w
 - `zsh/.config/zsh/sesh.zsh` kończy się `exec` przy starcie poza tmuxem — musi być sourcowany **na końcu** `.zshrc`.
 - **Nigdy nie uruchamiaj `tmux kill-server`** ani nie usuwaj `~/.local/share/tmux/resurrect` — to zabija żywe sesje użytkownika i jego zapisany stan. Config testuj na osobnym sockecie (`tmux -L test new-session -d`), a zmiany wprowadzaj przez `tmux source-file ~/.config/tmux/tmux.conf` albo `prefix R`.
 - Nawigacja panelami jest na **Alt**+hjkl, nie Ctrl — vim-tmux-navigator domyślnie zabiera `C-l` w root-table i psuje clear w shellu. Przesuwanie linii w nvimie przeniesione z `A-j/A-k` na `A-J/A-K`.
-- Remote pushuje przez alias SSH `github-arcziwoda` (klucz `~/.ssh/arcziwoda-gh`); goły `github.com` uwierzytelnia się kluczem konta drugiego. Przy operacjach `gh api` sprawdź aktywne konto: `gh auth switch --user arcziwoda`.
+- Remote pushuje przez alias SSH `github-arcziwoda` (klucz `~/.ssh/arcziwoda-gh`); goły `github.com` uwierzytelnia się kluczem drugiego konta. Przy operacjach `gh api` sprawdź aktywne konto: `gh auth switch --user arcziwoda`.
+- `~/.config/git/config-work` (tożsamość dla `~/work/`) jest celowo POZA repo — repo jest publiczne. Na nowej maszynie utwórz go ręcznie (instrukcja w komentarzu w `git/.gitconfig`).
 - Nie dodawaj do starshipa modułów wersji (`$java`/`$nodejs`/`$version` w `[python]`) — odpalają binarkę przy KAŻDYM prompcie (`java -version` = 32 ms). Profilowanie: `starship timings` w danym katalogu; pełny cykl w żywym shellu: `source ~/.config/zsh/prompt-bench.zsh`.
 - Interaktywny zsh testuj przez `NO_AUTO_TMUX=1 script -q /dev/null zsh -lic '…'` — bez `NO_AUTO_TMUX=1` shell natychmiast robi exec w picker sesji.

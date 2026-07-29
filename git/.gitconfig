@@ -1,9 +1,11 @@
 [user]
 	name = Artur Kempiński
+	# GitHub noreply — the repo is public, real addresses stay out of it.
 	email = arcziwoda@users.noreply.github.com
 
-# Work identity applies only inside ~/work. Create that directory (or change
-# the path) and the include takes effect for every repo underneath it.
+# Work identity applies only inside ~/work. The file is NOT tracked in this
+# repo (it contains the work address) — create it by hand on a new machine:
+#   printf '[user]\n\temail = <work address>\n' > ~/.config/git/config-work
 [includeIf "gitdir:~/work/"]
 	path = ~/.config/git/config-work
 

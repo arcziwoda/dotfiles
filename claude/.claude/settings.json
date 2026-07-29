@@ -24,5 +24,6 @@
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
-  "editorMode": "vim"
+  "editorMode": "vim",
+  "model": "claude-fable-5[1m]"
 }

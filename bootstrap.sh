@@ -36,3 +36,4 @@ echo
 echo "Done. Remaining manual steps:"
 echo "  - open a new terminal (Ghostty) to pick up the shell config"
 echo "  - run ./macos/defaults.sh if you want the system tweaks"
+	echo "  - create ~/.config/git/config-work (work identity; see git/.gitconfig)"
