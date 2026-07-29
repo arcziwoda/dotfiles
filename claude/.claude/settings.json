@@ -2,6 +2,7 @@
   "permissions": {
     "defaultMode": "auto"
   },
+  "model": "claude-fable-5[1m]",
   "statusLine": {
     "type": "command",
     "command": "~/.claude/statusline.sh",
@@ -24,6 +25,5 @@
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
-  "editorMode": "vim",
-  "model": "claude-fable-5[1m]"
+  "editorMode": "vim"
 }
