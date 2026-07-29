@@ -7,5 +7,10 @@
   "tui": "fullscreen",
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
-  "editorMode": "vim"
+  "editorMode": "vim",
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 0
+  }
 }
