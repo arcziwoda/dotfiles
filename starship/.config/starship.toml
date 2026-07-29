@@ -10,7 +10,7 @@ $git_status\
 $python\
 $nodejs\
 $java\
-$docker_context\
+${custom.docker_context}\
 $cmd_duration\
 $character"""
 
@@ -50,11 +50,21 @@ style = "peach"
 format = '[$symbol($version )]($style)'
 
 [docker_context]
+# Replaced by the custom module below. The built-in can only hide the contexts
+# named "default" and "desktop-linux", and the everyday context here is
+# "orbstack" — so it would be shown permanently, which says nothing.
+disabled = true
+
+[custom.docker_context]
+description = "Docker context, shown only when it is not the everyday one"
+# One script for both, so the decision lives in a single place. It reads
+# Docker's config rather than calling `docker context show` (~10ms per prompt).
+# Edit SKIP in the script to change which contexts stay hidden.
+when = '"$HOME/.config/starship/docker-context.sh"'
+command = '"$HOME/.config/starship/docker-context.sh"'
 symbol = " "
 style = "blue"
-format = '[$symbol$context]($style) '
-# Always show the context, not just in directories with a Dockerfile.
-only_with_files = false
+format = '[$symbol$output]($style) '
 
 [cmd_duration]
 min_time = 2000
