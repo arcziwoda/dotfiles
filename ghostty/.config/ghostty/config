@@ -1,0 +1,48 @@
+# Ghostty — see `ghostty +show-config --default --docs` for every option.
+
+# ── Theme ──────────────────────────────────────────────────────────────
+# Bundled with Ghostty; no theme files to vendor.
+# Names are case-sensitive since 1.2.0 ("Catppuccin Macchiato", not "catppuccin-macchiato").
+theme = Catppuccin Macchiato
+
+# ── Font ───────────────────────────────────────────────────────────────
+font-family = JetBrainsMono Nerd Font
+font-size = 14
+# macOS dropped subpixel antialiasing; this compensates.
+font-thicken = true
+
+# ── Keyboard ───────────────────────────────────────────────────────────
+# Left Option acts as Alt (M-x bindings in tmux/nvim), right Option stays
+# native so Polish diacritics and #/~ still type correctly.
+macos-option-as-alt = left
+
+# ── Window ─────────────────────────────────────────────────────────────
+window-padding-x = 10
+window-padding-y = 8
+window-padding-balance = true
+window-padding-color = extend
+macos-titlebar-style = tabs
+# tmux owns session persistence; don't restore panes on relaunch.
+window-save-state = never
+window-colorspace = display-p3
+
+# ── Cursor & mouse ─────────────────────────────────────────────────────
+cursor-style = block
+cursor-style-blink = false
+mouse-hide-while-typing = true
+
+# ── Shell integration ──────────────────────────────────────────────────
+shell-integration = detect
+# ssh-terminfo installs xterm-ghostty on remote hosts on first connect.
+# Drop it if ~/.ssh/config ever uses RemoteCommand (incompatible).
+shell-integration-features = cursor,sudo,title,ssh-env,ssh-terminfo
+
+# ── Behaviour ──────────────────────────────────────────────────────────
+# tmux keeps the sessions alive, so closing a window is never destructive.
+confirm-close-surface = false
+
+# ── Keybinds ───────────────────────────────────────────────────────────
+keybind = super+shift+comma=reload_config
+
+# Per-machine overrides; `?` means "ignore if missing".
+config-file = ?local.conf

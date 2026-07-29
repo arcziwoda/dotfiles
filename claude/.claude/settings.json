@@ -2,11 +2,10 @@
   "permissions": {
     "defaultMode": "auto"
   },
-  "model": "claude-fable-5[1m]",
+  "outputStyle": "Direct",
   "language": "Polish",
   "tui": "fullscreen",
+  "skipWorkflowUsageWarning": true,
   "theme": "dark",
-  "editorMode": "vim",
-  "outputStyle": "Direct",
-  "skipWorkflowUsageWarning": true
+  "editorMode": "vim"
 }
