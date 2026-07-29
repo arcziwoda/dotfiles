@@ -15,17 +15,24 @@ Repozytorium konfiguracji środowiska na macOS. Zarządzane przez **GNU Stow** w
 
 - Poprzedni setup (repo `arcziwoda/zsh-dotfiles`, stan ~2025) jest opisany w `docs/old-setup.md`.
 - Research i decyzje dot. nowego setupu: `docs/research-2026.md` (co wybraliśmy i dlaczego).
-- Preferencje użytkownika: theme **Catppuccin** (macchiato), vi-mode w shellu, workflow oparty o fzf/zoxide, tmux jako podstawa pracy, Python (pyenv/venv) + Docker.
+- Preferencje użytkownika: theme **Catppuccin macchiato** wszędzie, vi-mode w shellu, workflow oparty o fzf/zoxide, tmux jako podstawa pracy, Python + Docker (OrbStack).
 
 ## Layout
 
 ```
 ~/dotfiles/
-├── CLAUDE.md            # ten plik
-├── README.md            # instrukcja instalacji od zera
-├── .stow-local-ignore   # co NIE jest symlinkowane do $HOME
-├── Brewfile             # pakiety Homebrew
-├── docs/                # research, decyzje, notatki (nie stowowane)
-├── .config/             # configi XDG (tmux, nvim, terminal, starship itd.)
-└── .zshrc / inne dotfiles top-level
+├── CLAUDE.md  README.md  Brewfile  bootstrap.sh  .stowrc   # nie pakiety
+├── docs/                  # research i decyzje
+├── macos/defaults.sh      # ustawienia systemowe (uruchamiane, nie stowowane)
+└── <pakiet>/…             # ghostty zsh starship tmux sesh nvim git mise
+                           # fzf bat eza claude
 ```
+
+## Pułapki, o których trzeba pamiętać
+
+- `.stowrc` używa `--no-folding` → linkowane są **pliki**, nie katalogi. Skutek: po dodaniu nowego pliku do pakietu konieczne jest `stow -R <pakiet>`, a pliki tworzone przez aplikacje lądują w `$HOME`, nie w repo. Jeśli taki plik ma być wersjonowany (jak `nvim/.config/nvim/lazy-lock.json`), trzeba go świadomie przenieść do repo i przestow­ować.
+- Pluginy tmuxa żyją w `~/.local/share/tmux/plugins` (poza repo) — to dane, nie config. `catppuccin/tmux` jest klonowany ręcznie i przypięty do taga w `bootstrap.sh`, bo tpack używa hashowanych nazw katalogów i zepsułby ścieżkę w `run`.
+- W nvimie `:colorscheme` wymaga nazwy `catppuccin-nvim`; goły `catppuccin` to inny, wbudowany w Neovima motyw. Przez LazyVim ustawiamy `colorscheme = "catppuccin"` i to jest poprawne.
+- tmux-fingers nie parsuje kolorów hex — tylko nazwy ANSI.
+- Brewfile potrzebuje `tree-sitter-cli`, nie `tree-sitter` (ta druga formuła to sama biblioteka, bez binarki).
+- `zsh/.config/zsh/sesh.zsh` kończy się `exec` przy starcie poza tmuxem — musi być sourcowany **na końcu** `.zshrc`.
