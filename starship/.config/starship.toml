@@ -19,8 +19,11 @@ add_newline = true
 
 [directory]
 style = "bold lavender"
-truncation_length = 3
-truncate_to_repo = true
+# Show the whole path, not just the last few components and not shortened to the
+# git repo root. Past five components the leading ones collapse into "…/".
+truncation_length = 5
+truncate_to_repo = false
+truncation_symbol = "…/"
 read_only = " "
 read_only_style = "red"
 
