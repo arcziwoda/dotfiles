@@ -29,3 +29,9 @@ brew "lazygit"
 
 # ── Containers ─────────────────────────────────────────────────────────
 cask "orbstack"                    # Docker/Linux VMs, lighter than Docker Desktop
+
+# ── tmux ───────────────────────────────────────────────────────────────
+brew "tmux"                        # 3.7b: native floating panes
+brew "tpack"                       # maintained TPM replacement
+brew "sesh"                        # session manager (replaces tmux_session_manager)
+brew "tmux-fingers"                # hint-based copy (prefix+F)

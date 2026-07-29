@@ -86,3 +86,21 @@ ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6e738d'
 
 # ── Aliases and functions ──────────────────────────────────────────────
 source $XDG_CONFIG_HOME/zsh/aliases.zsh
+
+# ── tmux sessions (sesh) ───────────────────────────────────────────────
+# Alt-s: session picker from inside a running shell.
+function sesh-sessions() {
+  exec </dev/tty
+  exec <&1
+  sesh picker -i
+  zle reset-prompt >/dev/null 2>&1 || true
+}
+zle -N sesh-sessions
+bindkey -M viins '\es' sesh-sessions
+bindkey -M vicmd '\es' sesh-sessions
+
+# Session picker on terminal start — the old tmux_session_manager behaviour.
+# Escaping the picker drops you into a plain shell instead of forcing tmux.
+if [[ -o interactive && -z $TMUX && -z $NVIM && -z $VSCODE_INJECTION && -z $INSIDE_EMACS ]]; then
+  sesh picker -i
+fi

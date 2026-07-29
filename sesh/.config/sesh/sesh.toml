@@ -1,0 +1,29 @@
+#:schema https://github.com/joshmedeski/sesh/raw/main/sesh.schema.json
+
+# Configured projects first, then live tmux sessions, then zoxide history.
+# This is what makes declared sessions show up in the picker after a reboot,
+# even when nothing is running yet.
+sort_order = ["config", "tmux", "zoxide"]
+
+[default_session]
+preview_command = "eza --all --git --icons --color=always {}"
+
+[tui]
+show_icons = true
+show_windows = true
+preview = true
+preview_width = 60
+
+# ── Projects ───────────────────────────────────────────────────────────
+# `alias` gives a session a short, stable key: typing it in the picker jumps
+# straight there instead of relying on fuzzy ranking.
+
+[[session]]
+name = "default"
+path = "~"
+
+[[session]]
+name = "dotfiles"
+path = "~/dotfiles"
+alias = "dot"
+startup_command = "nvim ."
