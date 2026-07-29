@@ -1,0 +1,15 @@
+# Plugin list for antidote. ORDER MATTERS:
+#   1. zsh-vi-mode first — it rebinds keys on init, so anything binding keys
+#      afterwards (fzf, fzf-tab) must come later. ZVM_INIT_MODE=sourcing in
+#      .zshrc makes it initialise here rather than on first prompt.
+#   2. fzf-tab after compinit (called in .zshrc) and before any plugin that
+#      wraps widgets; it must be the last plugin to bind Tab.
+#   3. zsh-syntax-highlighting last, per its own README.
+
+jeffreytse/zsh-vi-mode
+MichaelAquilina/zsh-you-should-use
+MichaelAquilina/zsh-autoswitch-virtualenv
+Aloxaf/fzf-tab
+zsh-users/zsh-autosuggestions
+catppuccin/zsh-syntax-highlighting path:themes/catppuccin_macchiato-zsh-syntax-highlighting.zsh
+zsh-users/zsh-syntax-highlighting
