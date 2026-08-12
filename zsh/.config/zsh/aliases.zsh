@@ -26,6 +26,9 @@ alias venv='python3 -m venv .venv && source .venv/bin/activate'
 # ── Docker (OrbStack) ──────────────────────────────────────────────────
 alias dcu='docker context use'
 
+# ── macOS ──────────────────────────────────────────────────────────────
+alias ofd='open .'             # open Finder in the current directory
+
 # ── Network ────────────────────────────────────────────────────────────
 # Was aliased over `ifconfig` itself, which made the real command unusable.
 alias ips="ifconfig | grep 'inet ' -B4"
