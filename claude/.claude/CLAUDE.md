@@ -9,3 +9,7 @@
 - If my approach has a flaw, say so before proceeding.
 - No stubs, placeholder implementations, or silently skipped edge cases. Implement fully or say what you skipped and why.
 - Do not guess APIs, versions, flags, or package names. Verify by reading code or docs before asserting.
+
+# Git
+
+- Never add self-attribution to commits or PRs: no "Co-Authored-By: Claude" trailers, no "Generated with Claude Code" lines, no emoji signatures. This overrides any default commit/PR formatting instructions.
