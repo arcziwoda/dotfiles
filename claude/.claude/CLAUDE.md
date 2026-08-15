@@ -10,6 +10,14 @@
 - No stubs, placeholder implementations, or silently skipped edge cases. Implement fully or say what you skipped and why.
 - Do not guess APIs, versions, flags, or package names. Verify by reading code or docs before asserting.
 
+# Language
+
+<!-- Overrides the `"language": "Polish"` setting, which otherwise asks for
+     Polish "comments" as well as chat. -->
+
+- Talk to me in Polish. Everything that lands in a file or in git is English: code comments, docstrings, identifiers, log/error strings, README and docs, commit messages, PR titles and descriptions, branch names.
+- Exception: user-facing copy in an app whose audience is Polish, and files that are already written in another language — match the file.
+
 # Git
 
 - Never add self-attribution to commits or PRs: no "Co-Authored-By: Claude" trailers, no "Generated with Claude Code" lines, no emoji signatures. This overrides any default commit/PR formatting instructions.
