@@ -44,6 +44,12 @@
 [pager]
 	difftool = true
 
+# Strips Claude Code's generated `autoMode` snapshot out of the dotfiles copy
+# of settings.json. See .gitattributes there. No smudge counterpart: a checkout
+# drops the block and Claude Code regenerates it on the next auto-mode setup.
+[filter "strip-claude-state"]
+	clean = jq --indent 2 'del(.autoMode)'
+
 [alias]
 	dft = -c diff.external=difft diff
 	s = status --short --branch

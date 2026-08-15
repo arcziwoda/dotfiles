@@ -1,0 +1,9 @@
+# Claude Code rewrites ~/.claude/settings.json (a symlink into this repo) and
+# stores a generated environment snapshot under `autoMode` there: absolute home
+# paths, local repo names, per-machine trust boundaries. That is state, not
+# config, so a clean filter strips it on the way into the index. The file in
+# $HOME keeps it.
+#
+# The filter is defined in git/.gitconfig; without `stow git` it is undefined
+# and git silently passes the file through unchanged.
+claude/.claude/settings.json filter=strip-claude-state
