@@ -151,11 +151,19 @@ claude = [
   ["state_icon", "workspace", "tab"],
   [{ token = "$task", fg = "#b8c0e0" }],
   [{ token = "$task2", fg = "#b8c0e0" }],
-  # From ~/.claude/hooks/herdr-status.sh: waiting / working / finished.
-  [{ token = "$status", fg = "#8bd5ca", rules = [
-    { starts_with = "", fg = "#f5a97f", bold = true },
-    { starts_with = "", fg = "#a6da95" },
+  # From ~/.claude/hooks/herdr-status.sh, reported as state labels so herdr
+  # picks the one for the state it detects: waiting / working / finished.
+  # herdr's own "idle"/"working"/"done" text (before the first hook event) is
+  # hidden; $status2 is the wrapped rest of a long status.
+  [{ token = "state_text", fg = "#8bd5ca", rules = [
+    { starts_with = "\uf071", fg = "#f5a97f", bold = true },
+    { starts_with = "\uf00c", fg = "#a6da95" },
+    { equals = "idle", hide = true },
+    { equals = "working", hide = true },
+    { equals = "done", hide = true },
+    { equals = "blocked", fg = "#f5a97f", bold = true },
   ] }],
+  [{ token = "$status2", fg = "#8bd5ca" }],
   [
     { token = "$model", fg = "#8aadf4" },
     # The bar has one full cell per 10%: 9+ = 90%, 8 = 80%, 5 = 50%.

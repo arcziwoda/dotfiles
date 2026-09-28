@@ -118,6 +118,18 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$HOME/.claude/hooks/herdr-status.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
     ]
   }
 }
