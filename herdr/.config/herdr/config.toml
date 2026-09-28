@@ -14,6 +14,7 @@ onboarding = false
 # so every colour token is overridden with its Macchiato counterpart.
 [theme]
 name = "catppuccin"
+auto_switch = false         # written by herdr when a theme is picked in settings
 
 [theme.custom]
 accent = "#c6a0f6"          # mauve, like the current-window pill in tmux
@@ -64,9 +65,10 @@ focus_pane_up = ["prefix+k", "alt+k"]
 focus_pane_right = ["prefix+l", "alt+l"]
 
 # Workspaces (tmux sessions).
-# prefix s / Alt-s = session picker, as in tmux; herdr puts settings on
-# prefix s by default, so they move to prefix S.
-workspace_picker = ["prefix+s", "alt+s"]
+# prefix s / Alt-s open herdr-navigator (see [[keys.command]] below), which
+# also creates workspaces from zoxide dirs like the tmux picker. herdr's own
+# picker stays on prefix t as a fallback; settings move from prefix s to S.
+workspace_picker = "prefix+t"
 settings = "prefix+shift+s"
 goto = "prefix+w"           # tree navigator, the closest thing to choose-tree
 new_workspace = "prefix+shift+n"
@@ -76,6 +78,10 @@ switch_workspace = "prefix+shift+1..9"
 previous_workspace = "prefix+("
 next_workspace = "prefix+)"
 next_agent = "prefix+a"
+
+# Worktrees: a new workspace grouped under the repo, one per parallel agent.
+new_worktree = "prefix+shift+g"
+open_worktree = "prefix+shift+o"
 
 detach = ["prefix+d", "prefix+q"]
 reload_config = "prefix+shift+r"
@@ -90,11 +96,63 @@ description = "lazygit"
 width = "90%"
 height = "85%"
 
+# ── Plugins (installed by bootstrap.sh; configs in plugins/config/) ──────
+[[keys.command]]
+key = "prefix+s"
+type = "plugin_action"
+command = "herdr-navigator.open"
+description = "navigator: jump to or create a workspace"
+
+[[keys.command]]
+key = "alt+s"
+type = "plugin_action"
+command = "herdr-navigator.open"
+description = "navigator: jump to or create a workspace"
+
+# prefix L = previous workspace, like `sesh last` in tmux.
+[[keys.command]]
+key = "prefix+shift+l"
+type = "plugin_action"
+command = "herdr-navigator.jump-back"
+description = "navigator: previous workspace"
+
+[[keys.command]]
+key = "prefix+shift+v"
+type = "plugin_action"
+command = "persiyanov.reviewr.toggle"
+description = "reviewr: review the agent's diff"
+
 # ── UI ─────────────────────────────────────────────────────────────────
 [ui]
 prompt_new_tab_name = false # tmux never asks; rename later with prefix ,
 status_indicators = "symbols"
 agent_panel_sort = "priority"  # blocked agents first, across all workspaces
+
+# Claude account quota on the right of the tab bar. Status entries cannot be
+# coloured (herdr strips styles from command output).
+tab_bar_right = [
+  { type = "zoom" },
+  { type = "command", command = "~/.config/herdr/claude-quota.sh", interval_seconds = 30, timeout_seconds = 2 },
+]
+tab_bar_right_separator = "  "
+
+# Claude rows get their own layout; $task, $model, $ctx and $diff are pane
+# metadata published by ~/.claude/statusline.sh. Tokens without a value
+# disappear, and so does a row with none left.
+[ui.sidebar.agents.rows_by_agent]
+claude = [
+  ["state_icon", "workspace", "tab"],
+  [{ token = "$task", bold = true }],
+  [
+    { token = "$model", dim = true },
+    { token = "$ctx", fg = "#a6da95", rules = [
+      { starts_with = "●", fg = "#ed8796", bold = true },
+      { starts_with = "◕", fg = "#f5a97f" },
+      { starts_with = "◑", fg = "#eed49f" },
+    ] },
+    { token = "$diff", dim = true },
+  ],
+]
 
 # Restore recent pane contents after a server or machine restart, like
 # @resurrect-capture-pane-contents in tmux. Stored in session-history.json

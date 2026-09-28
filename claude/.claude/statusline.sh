@@ -83,12 +83,24 @@ git_segment() {
 	IFS= read -r model
 	IFS= read -r ctx
 	IFS= read -r five
+	IFS= read -r five_reset
+	IFS= read -r seven
+	IFS= read -r seven_reset
+	IFS= read -r session_name
+	IFS= read -r added
+	IFS= read -r removed
 } < <(
 	jq -r '
 		(.workspace.current_dir // .cwd // ""),
 		(.model.display_name // ""),
 		(.context_window.used_percentage // -1),
-		(.rate_limits.five_hour.used_percentage // -1)
+		(.rate_limits.five_hour.used_percentage // -1),
+		(.rate_limits.five_hour.resets_at // -1),
+		(.rate_limits.seven_day.used_percentage // -1),
+		(.rate_limits.seven_day.resets_at // -1),
+		(.session_name // "" | gsub("[\n\r]"; " ")),
+		(.cost.total_lines_added // 0),
+		(.cost.total_lines_removed // 0)
 	' <<<"$input"
 )
 
@@ -100,6 +112,52 @@ as_int() {
 }
 ctx=$(as_int "${ctx:-}")
 five=$(as_int "${five:-}")
+five_reset=$(as_int "${five_reset:-}")
+seven=$(as_int "${seven:-}")
+seven_reset=$(as_int "${seven_reset:-}")
+added=$(as_int "${added:-}")
+removed=$(as_int "${removed:-}")
+
+# ── Account quota cache ────────────────────────────────────────────────
+# Rate limits are per account, not per session, so they are written once for
+# whatever wants them outside Claude Code (herdr's tab bar reads this through
+# ~/.config/herdr/claude-quota.sh). Written via rename so a reader never sees
+# a half-written file.
+if ((five >= 0 || seven >= 0)); then
+	quota_file="${XDG_CACHE_HOME:-$HOME/.cache}/claude/rate-limits"
+	mkdir -p "${quota_file%/*}" 2>/dev/null &&
+		printf '%s %s %s %s\n' "$five" "$five_reset" "$seven" "$seven_reset" >"$quota_file.$$" &&
+		mv -f "$quota_file.$$" "$quota_file"
+fi
+
+# ── herdr sidebar ──────────────────────────────────────────────────────
+# Inside a herdr pane, publish per-session values as pane metadata; the
+# sidebar layout in herdr's config.toml decides where and how they show.
+# An empty value clears its token.
+if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
+	# The leading glyph encodes the level so herdr's starts_with colour rules
+	# can match on it (they cannot compare a number followed by text).
+	ctx_token=''
+	if ((ctx >= 0)); then
+		if ((ctx >= 90)); then glyph='●'
+		elif ((ctx >= 75)); then glyph='◕'
+		elif ((ctx >= 50)); then glyph='◑'
+		elif ((ctx >= 25)); then glyph='◔'
+		else glyph='○'
+		fi
+		ctx_token="$glyph ctx ${ctx}%"
+	fi
+	diff_token=''
+	((added > 0 || removed > 0)) && diff_token="+${added} −${removed}"
+
+	"${HERDR_BIN_PATH:-herdr}" pane report-metadata "$HERDR_PANE_ID" \
+		--source dotfiles:claude-statusline \
+		--token "task=$session_name" \
+		--token "model=${model%% (*}" \
+		--token "ctx=$ctx_token" \
+		--token "diff=$diff_token" \
+		>/dev/null 2>&1
+fi
 
 # ── Compose ────────────────────────────────────────────────────────────
 out="${lavender}$(prettify_path "$cwd")${reset}"

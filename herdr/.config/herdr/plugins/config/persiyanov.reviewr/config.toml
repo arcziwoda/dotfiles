@@ -1,0 +1,3 @@
+# reviewr (prefix V). Re-read on every refresh, no relaunch needed.
+# Keys: https://github.com/persiyanov/herdr-reviewr#configuration
+theme = "catppuccin-macchiato"

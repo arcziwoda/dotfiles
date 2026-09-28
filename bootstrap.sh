@@ -6,6 +6,9 @@ set -euo pipefail
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TMUX_PLUGINS="$HOME/.local/share/tmux/plugins"
 CATPPUCCIN_TMUX_TAG="v2.3.0"
+REVIEWR_TAG="v0.39.0"
+NAVIGATOR_TAG="v0.3.6"
+NAVIGATOR_DIR="$HOME/.local/share/herdr/local-plugins/herdr-navigator"
 
 echo "==> Homebrew packages"
 brew bundle --file="$DOTFILES/Brewfile"
@@ -37,6 +40,30 @@ echo "==> herdr Claude Code integration"
 # calls, ~/.claude/hooks/herdr-agent-state.sh. The script is managed by herdr
 # and rewritten on updates, so it stays out of the repo. No-op when current.
 herdr integration install claude >/dev/null
+
+echo "==> herdr plugins"
+# Plugins are global herdr data (outside the repo); their configs are stowed
+# from herdr/.config/herdr/plugins/config/. Bump the tags here to upgrade.
+if ! herdr plugin list | grep -qF "github:persiyanov/herdr-reviewr@$REVIEWR_TAG"; then
+  # Its build step downloads a checksummed prebuilt binary; no Rust needed.
+  herdr plugin install persiyanov/herdr-reviewr --ref "$REVIEWR_TAG" --yes >/dev/null
+fi
+# herdr-navigator's manifest builds with cargo. Rather than pulling in a Rust
+# toolchain, unpack the prebuilt release, put the binary where the manifest
+# expects it and link the directory — `plugin link` skips the build step.
+if ! grep -qF "version = \"${NAVIGATOR_TAG#v}\"" "$NAVIGATOR_DIR/herdr-plugin.toml" 2>/dev/null; then
+  tmp="$(mktemp -d)"
+  curl -fsSL "https://github.com/thanhdat77/herdr-navigator/releases/download/$NAVIGATOR_TAG/herdr-navigator-macos-aarch64.tar.gz" |
+    tar xz -C "$tmp"
+  herdr plugin unlink herdr-navigator >/dev/null 2>&1 || true
+  rm -rf "$NAVIGATOR_DIR"
+  mkdir -p "$(dirname "$NAVIGATOR_DIR")"
+  mv "$tmp/herdr-navigator" "$NAVIGATOR_DIR"
+  rmdir "$tmp"
+  mkdir -p "$NAVIGATOR_DIR/target/release"
+  mv "$NAVIGATOR_DIR/herdr-navigator" "$NAVIGATOR_DIR/target/release/"
+  herdr plugin link "$NAVIGATOR_DIR" >/dev/null
+fi
 
 echo
 echo "Done. Remaining manual steps:"

@@ -1,0 +1,27 @@
+# Herdr Navigator (prefix s / Alt-s). Only the keys that differ from the
+# defaults; every omitted key falls back to them. Full reference:
+# ~/.local/share/herdr/local-plugins/herdr-navigator/examples/default-config.toml
+
+[picker]
+# Plain workspace names ("dotfiles", not "dir: dotfiles"), as in tmux.
+prefix_workspace_labels = false
+# The plugin is installed from the prebuilt release and linked (see
+# bootstrap.sh). Its in-app updater reinstalls through `herdr plugin install`,
+# which builds with cargo, so it would fail here. Bump the version in
+# bootstrap.sh instead.
+check_updates = false
+
+[sources]
+# Not installed or not used.
+herdr_plus_projects = false
+herdr_plus_quick_actions = false
+servers = false
+
+# zoxide covers frequently used directories; roots add repos not visited yet.
+[[roots]]
+path = "~/work"
+max_depth = 2
+
+[[roots]]
+path = "~/coding"
+max_depth = 2
