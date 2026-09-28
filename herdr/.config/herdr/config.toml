@@ -1,0 +1,102 @@
+# herdr — tmux-like multiplexer with agent status in the sidebar.
+# Full commented defaults: `herdr --default-config`. Reload: prefix R.
+#
+# Model mapping from the tmux setup:
+#   tmux session -> herdr workspace (sidebar "Spaces")
+#   tmux window  -> herdr tab
+#   tmux pane    -> herdr pane
+# Keys below mirror tmux.conf wherever herdr has an equivalent action.
+
+onboarding = false
+
+# ── Theme: Catppuccin Macchiato ────────────────────────────────────────
+# The built-in "catppuccin" palette is Mocha and there is no Macchiato preset,
+# so every colour token is overridden with its Macchiato counterpart.
+[theme]
+name = "catppuccin"
+
+[theme.custom]
+accent = "#c6a0f6"          # mauve, like the current-window pill in tmux
+panel_bg = "#1e2030"        # mantle
+active_row_bg = "#363a4f"   # surface0
+selection_bg = "#494d64"    # surface1
+surface0 = "#363a4f"
+surface1 = "#494d64"
+surface_dim = "#24273a"     # base
+overlay0 = "#6e738d"
+overlay1 = "#8087a2"
+text = "#cad3f5"
+subtext0 = "#a5adcb"
+mauve = "#c6a0f6"
+green = "#a6da95"
+yellow = "#eed49f"
+red = "#ed8796"
+blue = "#8aadf4"
+teal = "#8bd5ca"
+peach = "#f5a97f"
+
+[terminal]
+new_cwd = "follow"          # like `-c "#{pane_current_path}"` on every split
+
+# ── Keys ───────────────────────────────────────────────────────────────
+[keys]
+prefix = "ctrl+a"           # prefix twice sends a literal C-a, like send-prefix
+
+# Tabs (tmux windows). prefix 1..9, c, n, p are herdr defaults already.
+new_tab = "prefix+c"
+next_tab = "prefix+n"
+previous_tab = "prefix+p"
+switch_tab = "prefix+1..9"
+rename_tab = ["prefix+comma", "prefix+shift+t"]
+close_tab = "prefix+shift+x"
+
+# Panes. herdr names splits by the divider: "vertical" = side by side.
+split_vertical = ["prefix+|", "prefix+percent", "prefix+v"]
+split_horizontal = ["prefix+minus", "prefix+double_quote"]
+close_pane = "prefix+x"     # no confirmation, same as tmux.conf
+zoom = "prefix+z"
+last_pane = "prefix+semicolon"
+# Alt+hjkl without prefix, as with vim-tmux-navigator. There is no nvim
+# integration: inside nvim these move between herdr panes, not nvim splits.
+focus_pane_left = ["prefix+h", "alt+h"]
+focus_pane_down = ["prefix+j", "alt+j"]
+focus_pane_up = ["prefix+k", "alt+k"]
+focus_pane_right = ["prefix+l", "alt+l"]
+
+# Workspaces (tmux sessions).
+# prefix s / Alt-s = session picker, as in tmux; herdr puts settings on
+# prefix s by default, so they move to prefix S.
+workspace_picker = ["prefix+s", "alt+s"]
+settings = "prefix+shift+s"
+goto = "prefix+w"           # tree navigator, the closest thing to choose-tree
+new_workspace = "prefix+shift+n"
+rename_workspace = ["prefix+$", "prefix+shift+w"]
+close_workspace = "prefix+shift+d"
+switch_workspace = "prefix+shift+1..9"
+previous_workspace = "prefix+("
+next_workspace = "prefix+)"
+next_agent = "prefix+a"
+
+detach = ["prefix+d", "prefix+q"]
+reload_config = "prefix+shift+r"
+
+# prefix g = lazygit popup, as in tmux. The docs only promise the focused
+# pane's cwd for detached shell commands, so cd there explicitly.
+[[keys.command]]
+key = "prefix+g"
+type = "popup"
+command = "cd \"$HERDR_ACTIVE_PANE_CWD\" && exec lazygit"
+description = "lazygit"
+width = "90%"
+height = "85%"
+
+# ── UI ─────────────────────────────────────────────────────────────────
+[ui]
+prompt_new_tab_name = false # tmux never asks; rename later with prefix ,
+status_indicators = "symbols"
+agent_panel_sort = "priority"  # blocked agents first, across all workspaces
+
+# Desktop notification through Ghostty when a background agent finishes or
+# needs input. Suppressed for the tab you are looking at.
+[ui.toast]
+delivery = "terminal"

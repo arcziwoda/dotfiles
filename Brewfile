@@ -42,3 +42,6 @@ brew "tmux"                        # 3.7b: native floating panes
 brew "tpack"                       # maintained TPM replacement
 brew "sesh"                        # session manager (replaces tmux_session_manager)
 brew "tmux-fingers"                # hint-based copy (prefix+F)
+
+# ── herdr (trial alongside tmux; switch with `mux`) ───────────────────
+brew "herdr"                       # multiplexer with agent status sidebar

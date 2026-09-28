@@ -12,7 +12,7 @@ brew bundle --file="$DOTFILES/Brewfile"
 
 echo "==> Stow packages"
 cd "$DOTFILES"
-stow claude ghostty zsh starship fzf bat eza tmux sesh nvim mise git bin
+stow claude ghostty zsh starship fzf bat eza tmux sesh herdr nvim mise git bin
 
 echo "==> bat theme cache"
 bat cache --build >/dev/null
@@ -31,6 +31,12 @@ fi
 
 echo "==> tmux plugins"
 tpack install
+
+echo "==> herdr Claude Code integration"
+# settings.json (in the repo) already calls the hook; this writes the script it
+# calls, ~/.claude/hooks/herdr-agent-state.sh. The script is managed by herdr
+# and rewritten on updates, so it stays out of the repo. No-op when current.
+herdr integration install claude >/dev/null
 
 echo
 echo "Done. Remaining manual steps:"

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Choose which multiplexer a new terminal window starts in.
+#
+#   mux           print the current choice
+#   mux tmux      new windows open the tmux session picker (the default)
+#   mux herdr     new windows attach to herdr
+#
+# The choice is machine-local state, not config, so it lives outside the repo.
+# Running sessions of either multiplexer are left alone; only windows opened
+# afterwards are affected.
+set -euo pipefail
+
+STATE_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/multiplexer"
+
+case "${1:-}" in
+	'')
+		cat "$STATE_FILE" 2>/dev/null || echo tmux
+		;;
+	tmux | herdr)
+		mkdir -p "$(dirname "$STATE_FILE")"
+		echo "$1" >"$STATE_FILE"
+		echo "new terminal windows will start in $1"
+		;;
+	*)
+		echo "usage: mux [tmux|herdr]" >&2
+		exit 2
+		;;
+esac

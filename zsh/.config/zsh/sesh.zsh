@@ -14,13 +14,18 @@ zle -N sesh-sessions
 bindkey -M viins '\es' sesh-sessions
 bindkey -M vicmd '\es' sesh-sessions
 
-# Terminal start: straight into the picker. NO_AUTO_TMUX=1 gives a plain shell.
-if [[ -o interactive && -z $TMUX && -z $NVIM && -z $VSCODE_INJECTION \
-      && -z $INSIDE_EMACS && -z $NO_AUTO_TMUX ]]; then
-  # The script execs into tmux, so control only comes back here once you detach
-  # — at which point exit closes the window, as the old `exec tmux` setup did.
-  # A non-zero status means the picker was escaped, so keep the plain shell.
-  if tmux-sessions; then
+# Terminal start: straight into the multiplexer chosen with `mux` (tmux picker
+# by default). NO_AUTO_TMUX=1 gives a plain shell. HERDR_ENV is set inside
+# herdr panes — without that guard every herdr pane would start tmux, and herdr
+# would then see `tmux` instead of the agent running in the pane.
+if [[ -o interactive && -z $TMUX && -z $HERDR_ENV && -z $NVIM \
+      && -z $VSCODE_INJECTION && -z $INSIDE_EMACS && -z $NO_AUTO_TMUX ]]; then
+  # Control only comes back here once you detach — at which point exit closes
+  # the window, as the old `exec tmux` setup did. A non-zero status means the
+  # picker was escaped (or herdr failed to start), so keep the plain shell.
+  if [[ $(mux) == herdr ]]; then
+    herdr && exit
+  elif tmux-sessions; then
     exit
   fi
 fi
