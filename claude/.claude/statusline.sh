@@ -142,12 +142,15 @@ if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
 		ctx_token="$bar ${ctx}%"
 	fi
 	# Sidebar rows are single lines that herdr truncates, so split the title
-	# at a word boundary into two tokens. 30 columns is what a 34-wide sidebar
-	# leaves after the row indent (herdr config.toml: ui.sidebar_width).
+	# at a word boundary into two tokens. A 34-wide sidebar (herdr config.toml:
+	# ui.sidebar_width) leaves 30 columns after the row indent, and 29 once the
+	# agent list overflows and herdr takes a column for its scrollbar — so wrap
+	# at 29. ${#} must count characters, not bytes, or Polish titles wrap early.
+	LC_ALL=en_US.UTF-8
 	task='' task2=''
 	read -r -a words <<<"$session_name"
 	for word in ${words[@]+"${words[@]}"}; do
-		if [[ -z $task2 ]] && ((${#task} + ${#word} + 1 <= 30 || ${#task} == 0)); then
+		if [[ -z $task2 ]] && ((${#task} + ${#word} + 1 <= 29 || ${#task} == 0)); then
 			task+="${task:+ }$word"
 		else
 			task2+="${task2:+ }$word"
