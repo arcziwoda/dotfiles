@@ -82,13 +82,21 @@ Picker sesji jest jednym skryptem — `bin/.local/bin/tmux-sessions` — używan
 | `prefix \|` `%` / `-` `"` | split w bok / w dół |
 | `prefix x` / `z` / `;` | zamknij panel / zoom / poprzedni panel |
 | `Alt-h/j/k/l` | ruch między panelami (bez integracji z nvimem) |
-| `prefix s`, `Alt-s` | picker workspace'ów |
+| `prefix s`, `Alt-s` | herdr-navigator: workspace'y, agenci, katalogi z zoxide; nieotwarty katalog tworzy workspace |
+| `prefix L` | poprzedni workspace (jak `sesh last`) |
+| `prefix t` | wbudowany picker workspace'ów (zapasowy) |
 | `prefix w` | nawigator (workspace'y, taby, agenci) |
 | `prefix S-n` / `$` / `S-d` / `S-1..9` / `(` `)` | nowy / zmiana nazwy / zamknij / skok / poprzedni-następny workspace |
 | `prefix a` | następny agent |
+| `prefix S-g` / `S-o` | nowy / otwórz git worktree jako workspace pod repo |
+| `prefix V` | reviewr: diff agenta, komentarze do linii, `s` odsyła je agentowi |
 | `prefix g` | lazygit w popupie |
 | `prefix d` / `q` | detach |
 | `prefix R` / `S` / `?` | reload configu / ustawienia / lista bindingów |
+
+Sidebar dla Claude Code pokazuje tytuł sesji, model, zajętość kontekstu (kolor wg progu) i `+/-` linii — publikuje je `claude/.claude/statusline.sh` przez `herdr pane report-metadata`, gdy działa w panelu herdra. Limity konta 5h/7d są po prawej w pasku kart (`herdr/.config/herdr/claude-quota.sh` czyta cache zapisywany przez statusline). Claude ma skill `herdr` (`claude/.claude/skills/herdr/`, z `herdr --skill`) do sterowania panelami — przy aktualizacji herdra wygeneruj go ponownie.
+
+Pluginy (`herdr-navigator`, `reviewr`) instaluje `bootstrap.sh` z przypiętymi wersjami; ich configi są w `herdr/.config/herdr/plugins/config/`.
 
 Po restarcie maszyny herdr odtwarza layout i wznawia rozmowy Claude Code (`claude --resume`) dzięki hookowi `SessionStart` w `settings.json`.
 
