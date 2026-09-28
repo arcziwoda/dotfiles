@@ -96,6 +96,8 @@ Picker sesji jest jednym skryptem — `bin/.local/bin/tmux-sessions` — używan
 
 Sidebar dla Claude Code pokazuje tytuł sesji (zawijany na dwie linie), model pasek zajętości kontekstu (kolor wg progu) i status z hooków Claude Code (`claude/.claude/hooks/herdr-status.sh`): na co czeka (zgoda, pytanie, plan), co właśnie robi albo o której skończył turę — publikuje je `claude/.claude/statusline.sh` przez `herdr pane report-metadata`, gdy działa w panelu herdra. Limity konta 5h/7d są po prawej w pasku kart (`herdr/.config/herdr/claude-quota.sh` czyta cache zapisywany przez statusline). Claude ma skill `herdr` (`claude/.claude/skills/herdr/`, z `herdr --skill`) do sterowania panelami — przy aktualizacji herdra wygeneruj go ponownie.
 
+Worktree: w space projektu `prefix S-g` → nazwa brancha → herdr tworzy checkout w `~/.herdr/worktrees/<repo>/<branch>` jako space zgrupowany pod projektem (reviewr otwiera się obok) → `claude` w nim. Hook `claude/.claude/hooks/worktree-context.sh` mówi wtedy Claude'owi, że jest w worktree: branch, główny checkout (nie ruszać), brakujące pliki gitignorowane (`.env`, `node_modules`…). Poza linked worktree hook nic nie wypisuje. Sprzątanie: „Delete worktree checkout…” w menu space (branch zostaje).
+
 Pluginy (`herdr-navigator`, `reviewr`) instaluje `bootstrap.sh` z przypiętymi wersjami; ich configi są w `herdr/.config/herdr/plugins/config/`.
 
 Po restarcie maszyny herdr odtwarza layout i wznawia rozmowy Claude Code (`claude --resume`) dzięki hookowi `SessionStart` w `settings.json`.
