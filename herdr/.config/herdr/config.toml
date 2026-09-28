@@ -169,11 +169,12 @@ claude = [
   [{ token = "$status2b", fg = "#f5a97f", bold = true }],
   [
     { token = "$model", fg = "#8aadf4" },
-    # The bar has one full cell per 10%: 9+ = 90%, 8 = 80%, 5 = 50%.
+    # statusline.sh prefixes the value with 1-4 zero-width spaces for the
+    # level (under 50%, 50%+, 80%+, 90%+); herdr does not draw them.
     { token = "$ctx", fg = "#a6da95", rules = [
-      { contains = "━━━━━━━━━", fg = "#ed8796", bold = true },
-      { contains = "━━━━━━━━", fg = "#f5a97f" },
-      { contains = "━━━━━", fg = "#eed49f" },
+      { starts_with = "\u200b\u200b\u200b\u200b", fg = "#ed8796", bold = true },
+      { starts_with = "\u200b\u200b\u200b", fg = "#f5a97f" },
+      { starts_with = "\u200b\u200b", fg = "#eed49f" },
     ] },
   ],
 ]

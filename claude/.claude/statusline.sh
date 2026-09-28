@@ -129,25 +129,36 @@ fi
 # sidebar layout in herdr's config.toml decides where and how they show.
 # An empty value clears its token.
 if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
-	# A 10-cell bar, one cell per 10%. herdr colours a token with rules on its
-	# text, so the config picks the colour by how many full cells the bar has.
+	# An 8-cell bar. Its colour comes from herdr's starts_with rules, which see
+	# the level as a run of leading zero-width spaces (U+200B): herdr keeps them
+	# in the value but does not draw them. 1 = under 50%, 2 = 50%+, 3 = 80%+,
+	# 4 = 90%+ (herdr config.toml, $ctx rules).
 	ctx_token=''
 	if ((ctx >= 0)); then
-		filled=$(((ctx + 5) / 10))
-		((filled > 10)) && filled=10
+		zw=$'\xe2\x80\x8b'
+		if ((ctx >= 90)); then level="$zw$zw$zw$zw"
+		elif ((ctx >= 80)); then level="$zw$zw$zw"
+		elif ((ctx >= 50)); then level="$zw$zw"
+		else level=$zw
+		fi
+		filled=$(((ctx * 8 + 50) / 100))
+		((filled > 8)) && filled=8
 		bar=''
-		for ((i = 0; i < 10; i++)); do
+		for ((i = 0; i < 8; i++)); do
 			if ((i < filled)); then bar+='━'; else bar+='─'; fi
 		done
-		ctx_token="$bar ${ctx}%"
+		ctx_token="$level$bar ${ctx}%"
 	fi
+
 	# Pad the model name to a fixed width so the context bar after it starts in
-	# the same column for every agent ("Opus 5.5" vs "Fable 5.1"). herdr trims
+	# the same column for every agent ("Opus 5.5" vs "Sonnet 4.6"). 10 columns
+	# + separator + 8-cell bar + "100%" = 26, which fits the 29 a scrolled list
+	# leaves after the indent. herdr trims
 	# whitespace off token values, so the padding ends in a zero-width space
 	# (U+200B), which is neither whitespace nor a control character to it.
 	model_token=''
 	if [[ -n $model ]]; then
-		printf -v model_token '%-9s\xe2\x80\x8b' "${model%% (*}"
+		printf -v model_token '%-10s\xe2\x80\x8b' "${model%% (*}"
 	fi
 
 	# Sidebar rows are single lines that herdr truncates, so split the title
