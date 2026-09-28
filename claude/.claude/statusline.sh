@@ -87,8 +87,6 @@ git_segment() {
 	IFS= read -r seven
 	IFS= read -r seven_reset
 	IFS= read -r session_name
-	IFS= read -r added
-	IFS= read -r removed
 } < <(
 	jq -r '
 		(.workspace.current_dir // .cwd // ""),
@@ -98,9 +96,7 @@ git_segment() {
 		(.rate_limits.five_hour.resets_at // -1),
 		(.rate_limits.seven_day.used_percentage // -1),
 		(.rate_limits.seven_day.resets_at // -1),
-		(.session_name // "" | gsub("[\n\r]"; " ")),
-		(.cost.total_lines_added // 0),
-		(.cost.total_lines_removed // 0)
+		(.session_name // "" | gsub("[\n\r]"; " "))
 	' <<<"$input"
 )
 
@@ -115,8 +111,6 @@ five=$(as_int "${five:-}")
 five_reset=$(as_int "${five_reset:-}")
 seven=$(as_int "${seven:-}")
 seven_reset=$(as_int "${seven_reset:-}")
-added=$(as_int "${added:-}")
-removed=$(as_int "${removed:-}")
 
 # ── Account quota cache ────────────────────────────────────────────────
 # Rate limits are per account, not per session, so they are written once for
@@ -135,27 +129,37 @@ fi
 # sidebar layout in herdr's config.toml decides where and how they show.
 # An empty value clears its token.
 if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
-	# The leading glyph encodes the level so herdr's starts_with colour rules
-	# can match on it (they cannot compare a number followed by text).
+	# A 10-cell bar, one cell per 10%. herdr colours a token with rules on its
+	# text, so the config picks the colour by how many full cells the bar has.
 	ctx_token=''
 	if ((ctx >= 0)); then
-		if ((ctx >= 90)); then glyph='●'
-		elif ((ctx >= 75)); then glyph='◕'
-		elif ((ctx >= 50)); then glyph='◑'
-		elif ((ctx >= 25)); then glyph='◔'
-		else glyph='○'
-		fi
-		ctx_token="$glyph ctx ${ctx}%"
+		filled=$(((ctx + 5) / 10))
+		((filled > 10)) && filled=10
+		bar=''
+		for ((i = 0; i < 10; i++)); do
+			if ((i < filled)); then bar+='━'; else bar+='─'; fi
+		done
+		ctx_token="$bar ${ctx}%"
 	fi
-	diff_token=''
-	((added > 0 || removed > 0)) && diff_token="+${added} −${removed}"
+	# Sidebar rows are single lines that herdr truncates, so split the title
+	# at a word boundary into two tokens. 30 columns is what a 34-wide sidebar
+	# leaves after the row indent (herdr config.toml: ui.sidebar_width).
+	task='' task2=''
+	read -r -a words <<<"$session_name"
+	for word in ${words[@]+"${words[@]}"}; do
+		if [[ -z $task2 ]] && ((${#task} + ${#word} + 1 <= 30 || ${#task} == 0)); then
+			task+="${task:+ }$word"
+		else
+			task2+="${task2:+ }$word"
+		fi
+	done
 
 	"${HERDR_BIN_PATH:-herdr}" pane report-metadata "$HERDR_PANE_ID" \
 		--source dotfiles:claude-statusline \
-		--token "task=$session_name" \
+		--token "task=$task" \
+		--token "task2=$task2" \
 		--token "model=${model%% (*}" \
 		--token "ctx=$ctx_token" \
-		--token "diff=$diff_token" \
 		>/dev/null 2>&1
 fi
 

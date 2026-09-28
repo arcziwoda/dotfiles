@@ -94,7 +94,7 @@ Picker sesji jest jednym skryptem — `bin/.local/bin/tmux-sessions` — używan
 | `prefix d` / `q` | detach |
 | `prefix R` / `S` / `?` | reload configu / ustawienia / lista bindingów |
 
-Sidebar dla Claude Code pokazuje tytuł sesji, model, zajętość kontekstu (kolor wg progu) i `+/-` linii — publikuje je `claude/.claude/statusline.sh` przez `herdr pane report-metadata`, gdy działa w panelu herdra. Limity konta 5h/7d są po prawej w pasku kart (`herdr/.config/herdr/claude-quota.sh` czyta cache zapisywany przez statusline). Claude ma skill `herdr` (`claude/.claude/skills/herdr/`, z `herdr --skill`) do sterowania panelami — przy aktualizacji herdra wygeneruj go ponownie.
+Sidebar dla Claude Code pokazuje tytuł sesji (zawijany na dwie linie), model i pasek zajętości kontekstu (kolor wg progu) — publikuje je `claude/.claude/statusline.sh` przez `herdr pane report-metadata`, gdy działa w panelu herdra. Limity konta 5h/7d są po prawej w pasku kart (`herdr/.config/herdr/claude-quota.sh` czyta cache zapisywany przez statusline). Claude ma skill `herdr` (`claude/.claude/skills/herdr/`, z `herdr --skill`) do sterowania panelami — przy aktualizacji herdra wygeneruj go ponownie.
 
 Pluginy (`herdr-navigator`, `reviewr`) instaluje `bootstrap.sh` z przypiętymi wersjami; ich configi są w `herdr/.config/herdr/plugins/config/`.
 

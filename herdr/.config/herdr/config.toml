@@ -126,6 +126,8 @@ description = "reviewr: review the agent's diff"
 [ui]
 prompt_new_tab_name = false # tmux never asks; rename later with prefix ,
 status_indicators = "symbols"
+sidebar_width = 34          # room for session titles; herdr default is 26
+sidebar_max_width = 40
 agent_panel_sort = "priority"  # blocked agents first, across all workspaces
 
 # Claude account quota on the right of the tab bar. Status entries cannot be
@@ -136,31 +138,25 @@ tab_bar_right = [
 ]
 tab_bar_right_separator = "  "
 
-# Claude rows get their own layout; $task, $model, $ctx and $diff are pane
-# metadata published by ~/.claude/statusline.sh. Tokens without a value
-# disappear, and so does a row with none left.
+# Claude rows get their own layout; $task, $task2, $model and $ctx are pane
+# metadata published by ~/.claude/statusline.sh ($task2 is the second half of
+# a title too long for one line). Tokens without a value disappear, and so
+# does a row with none left.
+[ui.sidebar.agents]
+row_gap = 1
+
 [ui.sidebar.agents.rows_by_agent]
 claude = [
   ["state_icon", "workspace", "tab"],
-  [{ token = "$task", bold = true }],
+  [{ token = "$task", fg = "#b8c0e0" }],
+  [{ token = "$task2", fg = "#b8c0e0" }],
   [
-    { token = "$model", dim = true },
+    { token = "$model", fg = "#8aadf4" },
+    # The bar has one full cell per 10%: 9+ = 90%, 8 = 80%, 5 = 50%.
     { token = "$ctx", fg = "#a6da95", rules = [
-      { starts_with = "●", fg = "#ed8796", bold = true },
-      { starts_with = "◕", fg = "#f5a97f" },
-      { starts_with = "◑", fg = "#eed49f" },
+      { contains = "━━━━━━━━━", fg = "#ed8796", bold = true },
+      { contains = "━━━━━━━━", fg = "#f5a97f" },
+      { contains = "━━━━━", fg = "#eed49f" },
     ] },
-    { token = "$diff", dim = true },
   ],
 ]
-
-# Restore recent pane contents after a server or machine restart, like
-# @resurrect-capture-pane-contents in tmux. Stored in session-history.json
-# next to session.json, so it can contain secrets from pane output.
-[experimental]
-pane_history = true
-
-# Desktop notification through Ghostty when a background agent finishes or
-# needs input. Suppressed for the tab you are looking at.
-[ui.toast]
-delivery = "terminal"
