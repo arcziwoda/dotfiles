@@ -25,7 +25,8 @@ surface0 = "#363a4f"
 surface1 = "#494d64"
 surface_dim = "#24273a"     # base
 overlay0 = "#6e738d"
-overlay1 = "#8087a2"
+overlay1 = "#b8c0e0"          # subtext1, not overlay1: herdr draws tab-bar status text
+                            # (the Claude quota) in this token and it has no style option
 text = "#cad3f5"
 subtext0 = "#a5adcb"
 mauve = "#c6a0f6"
@@ -150,6 +151,11 @@ claude = [
   ["state_icon", "workspace", "tab"],
   [{ token = "$task", fg = "#b8c0e0" }],
   [{ token = "$task2", fg = "#b8c0e0" }],
+  # From ~/.claude/hooks/herdr-status.sh: waiting / working / finished.
+  [{ token = "$status", fg = "#8bd5ca", rules = [
+    { starts_with = "", fg = "#f5a97f", bold = true },
+    { starts_with = "", fg = "#a6da95" },
+  ] }],
   [
     { token = "$model", fg = "#8aadf4" },
     # The bar has one full cell per 10%: 9+ = 90%, 8 = 80%, 5 = 50%.
