@@ -96,6 +96,12 @@ prompt_new_tab_name = false # tmux never asks; rename later with prefix ,
 status_indicators = "symbols"
 agent_panel_sort = "priority"  # blocked agents first, across all workspaces
 
+# Restore recent pane contents after a server or machine restart, like
+# @resurrect-capture-pane-contents in tmux. Stored in session-history.json
+# next to session.json, so it can contain secrets from pane output.
+[experimental]
+pane_history = true
+
 # Desktop notification through Ghostty when a background agent finishes or
 # needs input. Suppressed for the tab you are looking at.
 [ui.toast]
