@@ -141,6 +141,15 @@ if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
 		done
 		ctx_token="$bar ${ctx}%"
 	fi
+	# Pad the model name to a fixed width so the context bar after it starts in
+	# the same column for every agent ("Opus 5.5" vs "Fable 5.1"). herdr trims
+	# whitespace off token values, so the padding ends in a zero-width space
+	# (U+200B), which is neither whitespace nor a control character to it.
+	model_token=''
+	if [[ -n $model ]]; then
+		printf -v model_token '%-9s\xe2\x80\x8b' "${model%% (*}"
+	fi
+
 	# Sidebar rows are single lines that herdr truncates, so split the title
 	# at a word boundary into two tokens. A 34-wide sidebar (herdr config.toml:
 	# ui.sidebar_width) leaves 30 columns after the row indent, and 29 once the
@@ -161,7 +170,7 @@ if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
 		--source dotfiles:claude-statusline \
 		--token "task=$task" \
 		--token "task2=$task2" \
-		--token "model=${model%% (*}" \
+		--token "model=$model_token" \
 		--token "ctx=$ctx_token" \
 		>/dev/null 2>&1
 fi
