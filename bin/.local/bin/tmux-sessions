@@ -31,23 +31,40 @@ fi
 height=60%
 [[ -n ${TMUX:-} ]] && height=100%
 
-choice=$(
+# --exact matters more than it looks: with fuzzy matching on, typing a name for
+# a *new* session lands on whatever old session happens to contain those letters
+# in order ("hue" matches "gitHUb-managEment"), and Enter attaches to that
+# instead of creating anything. Exact mode still matches substrings, so typing
+# part of an existing name to pick it keeps working.
+# Alt-Enter is the escape hatch for the remaining case: creating a session whose
+# name is a substring of an existing one ("web" while "arcziweb" is open).
+out=$(
 	sesh list -t --icons | fzf \
 		--ansi \
+		--exact \
 		--print-query \
+		--expect alt-enter \
 		--accept-nth '2..' \
 		--height "$height" --reverse --border --border-label ' sessions ' \
 		--prompt '⚡ ' \
+		--header 'enter: attach/create   alt-enter: create from typed name' \
 		--preview 'sesh preview {2..}' \
 		--preview-window 'right:55%,border-left' \
 		--bind 'tab:down,btab:up'
 )
 
-# --print-query prints the typed text first and the accepted match, if any, on
-# the following line, so the last line is the choice either way. --accept-nth
-# drops the icon column; --ansi makes fzf interpret sesh's colour codes rather
-# than printing them as text.
-name=${choice##*$'\n'}
+# With both flags fzf prints three lines: the typed query, the key that accepted
+# (empty for plain Enter) and the selected entry, the last of which is absent
+# when nothing matched. --accept-nth drops the icon column; --ansi makes fzf
+# interpret sesh's colour codes rather than printing them as text.
+query='' key='' selection=''
+{ IFS= read -r query; IFS= read -r key; IFS= read -r selection; } <<<"$out"
+
+if [[ $key == alt-enter ]]; then
+	name=$query
+else
+	name=${selection:-$query}
+fi
 
 # Nothing typed and nothing picked: leave things as they are.
 [[ -n $name ]] || exit 1
