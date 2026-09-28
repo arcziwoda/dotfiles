@@ -25,7 +25,7 @@ Repozytorium konfiguracji środowiska na macOS. Zarządzane przez **GNU Stow** w
 ├── docs/                  # research i decyzje
 ├── macos/defaults.sh      # ustawienia systemowe (uruchamiane, nie stowowane)
 └── <pakiet>/…             # ghostty zsh starship tmux sesh nvim git mise
-                           # fzf bat eza claude
+                           # fzf bat eza claude herdr
 ```
 
 ## Pułapki, o których trzeba pamiętać
@@ -43,3 +43,5 @@ Repozytorium konfiguracji środowiska na macOS. Zarządzane przez **GNU Stow** w
 - `claude/.claude/settings.json` przechodzi przez filtr `clean` (`.gitattributes` + `[filter "strip-claude-state"]` w `git/.gitconfig`), który wycina klucz `autoMode` — Claude Code sam dopisuje tam snapshot środowiska ze ścieżkami domowymi. W `$HOME` klucz zostaje, do repo nie trafia; nie ma `smudge`, więc po `git checkout` znika z pliku roboczego do następnego setupu auto-mode. Filtr wymaga `jq` i zadziała dopiero po `stow git` — bez niego git po cichu przepuszcza plik w całości.
 - Nie dodawaj do starshipa modułów wersji (`$java`/`$nodejs`/`$version` w `[python]`) — odpalają binarkę przy KAŻDYM prompcie (`java -version` = 32 ms). Profilowanie: `starship timings` w danym katalogu; pełny cykl w żywym shellu: `source ~/.config/zsh/prompt-bench.zsh`.
 - Interaktywny zsh testuj przez `NO_AUTO_TMUX=1 script -q /dev/null zsh -lic '…'` — bez `NO_AUTO_TMUX=1` shell natychmiast robi exec w picker sesji.
+- herdr jest w trialu obok tmuxa: `mux herdr|tmux` zapisuje wybór w `~/.local/state/multiplexer` (poza repo), a `sesh.zsh` startuje według niego. Guard `-z $HERDR_ENV` w `sesh.zsh` jest obowiązkowy — bez niego każdy panel herdra odpala tmuxa i herdr widzi `tmux` zamiast agenta. Wbudowany motyw `catppuccin` w herdrze to mocha; macchiato jest zrobione nadpisaniem wszystkich tokenów w `[theme.custom]`. Config testuj na osobnej sesji (`HERDR_CONFIG_PATH=… herdr --session cfgtest` wewnątrz `tmux -L test`), potem `herdr session stop/delete cfgtest`.
+- `herdr integration install claude` dopisuje hook `SessionStart` do `settings.json` **przez symlink**, czyli do pliku w repo, z absolutną ścieżką do `~/.claude/hooks/herdr-agent-state.sh`. Nie zamieniaj jej na `$HOME` — herdr rozpoznaje swój wpis po dokładnym stringu i przy reinstalacji dopisałby duplikat. Sam skrypt jest zarządzany przez herdra i zostaje poza repo; tworzy go `bootstrap.sh`.
