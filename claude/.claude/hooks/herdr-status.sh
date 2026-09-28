@@ -12,9 +12,12 @@
 # for another hook event (there is none for "permission granted").
 #
 # Sidebar rows are single lines, so the text is wrapped at a word boundary:
-# the first line goes into the labels, the rest into the $status2 token. Every
-# label set in one call carries the same text behind a one-column icon, so the
-# continuation is right whichever state herdr shows.
+# the first line goes into the labels, the rest into a second row. That row is
+# a plain token and cannot follow herdr's state by itself, so it exists twice —
+# $status2w (activity colour) and $status2b (warning colour) — and only one is
+# ever non-empty. The hook shows the one matching the state it expects and
+# stores both tails ($tailw, $tailb, not rendered); the dotfiles.claude-status
+# herdr plugin swaps them on every pane.agent_status_changed.
 #
 # Outside herdr this is a no-op. Runs synchronously on every tool call, so it
 # stays cheap: one jq, one herdr call over a local socket.
@@ -67,20 +70,26 @@ wrap() {
 	done
 }
 
-# report TEXT [BLOCKED_TEXT]: TEXT (with the cog) for every state herdr may
-# show, BLOCKED_TEXT (with the warning sign) for "blocked"; it defaults to
-# TEXT, and then both wrap identically since the icons are the same width.
-# The continuation is taken from BLOCKED_TEXT: when the two differ (a question
-# or a plan), the blocked state is the one on screen until PostToolUse.
+# report EXPECT TEXT [BLOCKED_TEXT]: TEXT (with the cog) for every state herdr
+# may show, BLOCKED_TEXT (with the warning sign) for "blocked"; it defaults to
+# TEXT. EXPECT (blocked|working) is the state this event is about to put the
+# pane in, which decides the second row until the plugin sees the real one.
 report() {
-	local text=$1 blocked=${2:-$1}
+	local expect=$1 text=$2 blocked=${3:-$2}
 	wrap "$COG $text"
-	local working=$line1
+	local working=$line1 tailw=$line2
 	wrap "$WARN $blocked"
+	local tailb=$line2 showw=$tailw showb=''
+	[[ $expect == blocked ]] && showw='' showb=$tailb
 	send --state-label "working=$working" --state-label "unknown=$working" \
 		--state-label "idle=$working" --state-label "done=$working" \
-		--state-label "blocked=$line1" --token "status2=$line2"
+		--state-label "blocked=$line1" \
+		--token "tailw=$tailw" --token "tailb=$tailb" \
+		--token "status2w=$showw" --token "status2b=$showb"
 }
+
+# All second-row tokens empty: nothing to wrap in the done/cleared states.
+NO_TAIL=(--token "tailw=" --token "tailb=" --token "status2w=" --token "status2b=")
 
 send() {
 	"${HERDR_BIN_PATH:-herdr}" pane report-metadata "$HERDR_PANE_ID" \
@@ -88,23 +97,23 @@ send() {
 }
 
 case $event in
-	UserPromptSubmit) report thinking 'needs input' ;;
+	UserPromptSubmit) report working thinking 'needs input' ;;
 	PreToolUse)
 		case $tool in
 			# Waiting on you while the tool itself runs; PostToolUse resets it.
-			AskUserQuestion) report thinking "question: $what" ;;
-			ExitPlanMode) report thinking 'plan ready for review' ;;
-			*) report "$label" ;;
+			AskUserQuestion) report blocked thinking "question: $what" ;;
+			ExitPlanMode) report blocked thinking 'plan ready for review' ;;
+			*) report working "$label" ;;
 		esac
 		;;
-	PermissionRequest) report "$label" ;;
-	PostToolUse) report thinking 'needs input' ;; # only AskUserQuestion, ExitPlanMode
+	PermissionRequest) report blocked "$label" ;;
+	PostToolUse) report working thinking 'needs input' ;; # only AskUserQuestion, ExitPlanMode
 	Stop)
 		done_label="$CHECK $(date +%H:%M)"
 		send --state-label "idle=$done_label" --state-label "done=$done_label" \
 			--state-label "unknown=$done_label" --state-label "working=$COG thinking" \
-			--state-label "blocked=$WARN needs input" --token "status2="
+			--state-label "blocked=$WARN needs input" "${NO_TAIL[@]}"
 		;;
-	SessionStart | SessionEnd) send --clear-state-labels --token "status2=" ;;
+	SessionStart | SessionEnd) send --clear-state-labels "${NO_TAIL[@]}" ;;
 esac
 exit 0
