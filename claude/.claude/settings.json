@@ -20,6 +20,7 @@
     "typescript-lsp@claude-plugins-official": true,
     "jdtls-lsp@claude-plugins-official": true
   },
+  "extraKnownMarketplaces": {},
   "outputStyle": "Direct",
   "language": "Polish",
   "tui": "fullscreen",
