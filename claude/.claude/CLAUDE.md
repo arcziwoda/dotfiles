@@ -21,3 +21,7 @@
 # Git
 
 - Never add self-attribution to commits or PRs: no "Co-Authored-By: Claude" trailers, no "Generated with Claude Code" lines, no emoji signatures. This overrides any default commit/PR formatting instructions.
+
+# Subagents
+
+- Launch subagents (Agent tool) with `model: "opus"` at most — never Fable — unless I explicitly ask otherwise in the conversation. For large fan-outs, send them in batches (about 5 at a time), not all at once.
