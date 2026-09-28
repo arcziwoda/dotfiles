@@ -30,5 +30,19 @@
   "skipWorkflowUsageWarning": true,
   "theme": "dark",
   "editorMode": "vim",
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "^(startup|resume|clear|compact|fork)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/arturkempinski/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
 }
