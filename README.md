@@ -105,4 +105,5 @@ Po restarcie maszyny herdr odtwarza layout i wznawia rozmowy Claude Code (`claud
 ## Dokumentacja
 
 - [docs/research-2026.md](docs/research-2026.md) — dlaczego te narzędzia, co odrzucone, co obserwować
+- [docs/herdr/README.md](docs/herdr/README.md) — integracja herdr + Claude Code: elementy, przepływ danych, testowanie, aktualizacje
 - [docs/old-setup.md](docs/old-setup.md) — poprzedni setup (2025) jako punkt odniesienia
