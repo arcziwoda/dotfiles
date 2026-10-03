@@ -30,3 +30,5 @@ __pycache__/
 # Tooling
 .direnv/
 node_modules/
+
+**/.claude/settings.local.json
