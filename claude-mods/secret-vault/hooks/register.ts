@@ -135,12 +135,35 @@ async function approveUse($: EngineInterface, tool: string, names: readonly stri
   return `secret-vault: the user did not run this call and said: ${answer}`
 }
 
-// The call's arguments as the dialog shows them: a Bash command alone when no
-// other argument holds a placeholder, every argument otherwise.
+// Characters that draw as nothing or move the cursor (C0/C1 controls but
+// newline and tab, ANSI escapes, bidi overrides, zero-width marks): in the
+// dialog they could hide what the call does, so each is shown as its code.
+const HIDDEN = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u00AD\u061C\u180E\u200B-\u200F\u2028-\u202E\u2060-\u206F\uFEFF]/g
+
+function revealHidden(text: string): { text: string; isAltered: boolean } {
+  let isAltered = false
+  const out = text.replace(HIDDEN, c => {
+    isAltered = true
+    return `<U+${c.codePointAt(0)?.toString(16).toUpperCase().padStart(4, '0')}>`
+  })
+  return { text: out, isAltered }
+}
+
+// The call as the dialog shows it: every argument the tool receives, a Bash
+// command first and verbatim, so nothing that changes how it runs is left
+// out (run_in_background, dangerouslyDisableSandbox, a description holding
+// a placeholder), with hidden characters made visible.
 function describeCall(e: Record<string, unknown>): string {
   const { tool: _tool, tool_use_id: _id, agentId: _agent, ...args } = e
   const { command, ...rest } = args
-  return typeof command === 'string' && !hasPlaceholder(JSON.stringify(rest)) ? command : JSON.stringify(args, null, 2)
+  const body =
+    typeof command === 'string'
+      ? Object.keys(rest).length
+        ? `${command}\n\nwith ${JSON.stringify(rest, null, 2)}`
+        : command
+      : JSON.stringify(args, null, 2)
+  const { text, isAltered } = revealHidden(body)
+  return isAltered ? `WARNING: the call holds invisible or control characters, shown as <U+XXXX>.\n\n${text}` : text
 }
 
 export const register: Register = on => {
