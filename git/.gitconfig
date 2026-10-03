@@ -48,7 +48,7 @@
 # of settings.json. See .gitattributes there. No smudge counterpart: a checkout
 # drops the block and Claude Code regenerates it on the next auto-mode setup.
 [filter "strip-claude-state"]
-	clean = jq --indent 2 'del(.autoMode)'
+	clean = jq --indent 2 'del(.autoMode, .model)'
 
 [alias]
 	dft = -c diff.external=difft diff
