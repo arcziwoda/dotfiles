@@ -1,2 +1,5 @@
 Brewfile.lock.json
 .DS_Store
+# Written by Claude Code when it loads a mod from here; not ours to version.
+claude-mods/*/.claude-plugin/types/
+claude-mods/*/tsconfig.json

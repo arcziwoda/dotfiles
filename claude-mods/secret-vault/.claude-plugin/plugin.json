@@ -1,0 +1,6 @@
+{
+  "name": "secret-vault",
+  "version": "0.1.0",
+  "description": "Keeps secrets out of the conversation: the model reads «secret:name» placeholders, tool calls get the real values back when they run.",
+  "types": "./types/index.d.ts"
+}
