@@ -64,10 +64,12 @@ if ! grep -qF "version = \"${NAVIGATOR_TAG#v}\"" "$NAVIGATOR_DIR/herdr-plugin.to
   mv "$NAVIGATOR_DIR/herdr-navigator" "$NAVIGATOR_DIR/target/release/"
   herdr plugin link "$NAVIGATOR_DIR" >/dev/null
 fi
-# Our own plugin, versioned in the herdr package and stowed first.
-if ! herdr plugin list | grep -qF "dotfiles.claude-status"; then
-  herdr plugin link "$HOME/.config/herdr/local-plugins/claude-status" >/dev/null
-fi
+# Our own plugins, versioned in the herdr package and stowed first.
+for plugin in claude-status space-status; do
+  if ! herdr plugin list | grep -qF "dotfiles.$plugin"; then
+    herdr plugin link "$HOME/.config/herdr/local-plugins/$plugin" >/dev/null
+  fi
+done
 
 echo
 echo "Done. Remaining manual steps:"

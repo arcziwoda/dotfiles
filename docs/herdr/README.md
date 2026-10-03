@@ -25,6 +25,15 @@ For every Claude Code pane, the agent list renders (herdr `config.toml`,
 
 The right end of the tab bar shows the account quota: `5h 29%  14:50 · 7d 8%`.
 
+Each workspace in the Spaces panel (`[ui.sidebar.spaces]`) gets a third row
+from the `dotfiles.space-status` plugin:
+
+```
+◐ vpp                                state icon, workspace
+  feat/forecast · ↑2                 branch, ahead/behind (herdr built-ins)
+  !3 ?1 ·  #88 approved             $dirty (+staged !modified ?untracked), $pr
+```
+
 ## Pieces
 
 | File | Role |
@@ -33,6 +42,8 @@ The right end of the tab bar shows the account quota: `5h 29%  14:50 · 7d 8%`.
 | `claude/.claude/statusline.sh` | Claude Code status line. Inside herdr also publishes `$task`, `$task2`, `$model`, `$ctx` and writes the quota cache |
 | `claude/.claude/hooks/herdr-status.sh` | Claude Code hook (see below). Publishes the status as herdr **state labels** plus `$status2w`/`$status2b`/`$tailw`/`$tailb` |
 | `herdr/.config/herdr/local-plugins/claude-status/` | Our herdr plugin (`dotfiles.claude-status`). On `pane.agent_status_changed` copies the right tail into `$status2w` or `$status2b` |
+| `herdr/.config/herdr/local-plugins/space-status/` | Our herdr plugin (`dotfiles.space-status`). Reports `$dirty` and `$pr` per workspace on startup, `workspace.focused` and `pane.agent_status_changed`; see the header of `refresh.sh` |
+| `zsh/.config/zsh/herdr-space.zsh` | `precmd` inside herdr: refreshes `$dirty` of the pane's workspace after every command, in the background |
 | `herdr/.config/herdr/claude-quota.sh` | Tab-bar `command` entry. Reads `~/.cache/claude/rate-limits` (written by `statusline.sh`) |
 | `claude/.claude/hooks/worktree-context.sh` | `SessionStart` hook: in a linked git worktree (e.g. herdr `prefix G`), tells Claude its branch, the main checkout to leave alone, and which gitignored files are missing. Silent elsewhere |
 | `~/.claude/hooks/herdr-agent-state.sh` | **herdr's** Claude integration (`herdr integration install claude`, run by `bootstrap.sh`, not in the repo). Reports the session id so herdr resumes the conversation after a server restart |
@@ -83,6 +94,34 @@ state, so that row exists twice: `$status2w` (activity colour) and `$status2b`
 (warning colour), only one non-empty. The hook stores both tails (`$tailw`,
 `$tailb`, not rendered) and shows the one matching the state its event implies;
 the plugin swaps them on each state change herdr detects.
+
+### Spaces panel tokens
+
+herdr has no per-workspace equivalent of the status line, and plugin startup
+hooks are one-shot, not daemons, so `$dirty` and `$pr` are pushed on events
+instead of polled:
+
+| Trigger | Refreshes | Cost (measured with 16 workspaces) |
+|---|---|---|
+| zsh `precmd` in a herdr pane | `$dirty` of that workspace | +1.9 ms per prompt (the background fork); ~10 ms in the background; no herdr call unless the value changed |
+| `workspace.focused` | `$dirty` of all workspaces, `$pr` of those not looked up in the last 2 min | ~65 ms in the background, ~2 ms herdr server CPU |
+| `pane.agent_status_changed` (not to `working`) | `$dirty` of that workspace | as `precmd` |
+| plugin startup | everything, cache cleared | one focus pass |
+
+A workspace's repo is its herdr worktree checkout, else the cwd of the first
+pane in its active tab. Values are cached per herdr server under
+`~/.local/state/herdr-space-status/` and reported only on change.
+
+`$pr` skips the default branch. It calls `gh pr view <branch> -R owner/repo`
+(SSH host aliases in `origin` are not passed to gh) with each logged-in gh
+account in turn and remembers the one that can read the repo; a lookup takes
+~0.85 s with the account known, ~3 s the first time (`gh auth status` checks
+every token).
+
+To switch it off: `herdr plugin disable dotfiles.space-status`. To remove it:
+revert its commit, `herdr plugin unlink dotfiles.space-status`,
+`stow -R herdr zsh`, `herdr server reload-config`, and delete
+`~/.local/state/herdr-space-status`.
 
 ## Constraints that shaped the layout
 

@@ -146,6 +146,26 @@ tab_bar_right_separator = "  "
 [ui.sidebar.agents]
 row_gap = 1
 
+# Spaces: herdr's default two rows plus a third with workspace metadata from
+# the dotfiles.space-status plugin (local-plugins/space-status/refresh.sh):
+# $dirty is uncommitted work in starship's notation (+staged !modified
+# ?untracked), $pr the branch's pull request, coloured by its leading icon.
+[ui.sidebar.spaces]
+rows = [
+  ["state_icon", "workspace"],
+  ["branch", "git_status"],
+  [
+    { token = "$dirty", fg = "#f5a97f" },
+    { token = "$pr", fg = "#8aadf4", rules = [
+      { starts_with = "", fg = "#ed8796", bold = true }, # CI failed
+      { starts_with = "", fg = "#f5a97f" },              # changes requested
+      { starts_with = "", fg = "#eed49f" },              # CI running
+      { starts_with = "", fg = "#a6da95" },              # CI passed
+      { starts_with = "", fg = "#c6a0f6" },              # merged
+    ] },
+  ],
+]
+
 [ui.sidebar.agents.rows_by_agent]
 claude = [
   ["state_icon", "workspace", "tab"],

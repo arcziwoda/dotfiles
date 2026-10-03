@@ -1,0 +1,21 @@
+# Git and pull request state per workspace in herdr's Spaces panel ($dirty,
+# $pr; see refresh.sh). Linked, not installed:
+# `herdr plugin link ~/.config/herdr/local-plugins/space-status` (bootstrap.sh
+# does it). To turn it off: `herdr plugin disable dotfiles.space-status`.
+id = "dotfiles.space-status"
+name = "Space git status"
+version = "0.1.0"
+min_herdr_version = "0.9.0"
+description = "Report uncommitted changes and the branch's pull request as workspace tokens"
+platforms = ["macos", "linux"]
+
+[[startup]]
+command = ["bash", "refresh.sh", "startup"]
+
+[[events]]
+on = "workspace.focused"
+command = ["bash", "refresh.sh", "focus"]
+
+[[events]]
+on = "pane.agent_status_changed"
+command = ["bash", "refresh.sh", "agent"]

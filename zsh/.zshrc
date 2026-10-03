@@ -93,6 +93,9 @@ ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=#6e738d'
 # ── Aliases and functions ──────────────────────────────────────────────
 source $XDG_CONFIG_HOME/zsh/aliases.zsh
 
+# ── herdr Spaces panel: uncommitted changes per workspace ──────────────
+source $XDG_CONFIG_HOME/zsh/herdr-space.zsh
+
 # ── tmux sessions (sesh) ───────────────────────────────────────────────
 # Must stay last: it ends with an `exec` when starting outside tmux.
 source $XDG_CONFIG_HOME/zsh/sesh.zsh
