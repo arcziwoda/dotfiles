@@ -118,7 +118,6 @@ async function approveUse(
   args: Record<string, unknown>,
 ): Promise<string | undefined> {
   const review = reviewCall(args, {
-    showHosts: true,
     mark: { label: 'Secret used', test: line => line.includes('«secret:') },
   })
   if (!review.isReviewable) {
