@@ -16,6 +16,10 @@ export const MAX_LINES = 60
 // and overrides, zero-width and other format characters.
 const HIDDEN = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u00AD\u061C\u180E\u200B-\u200F\u2028-\u202E\u2060-\u206F\uFEFF]/g
 
+// A run of blanks inside a line long enough to wrap into empty-looking rows
+// and push the rest of the call out of view; ordinary indentation is shorter.
+const PADDING = /[ \t]{16,}/g
+
 export type CallReview = { isReviewable: true; text: string } | { isReviewable: false; reason: string }
 
 export type ReviewOptions = {
@@ -57,7 +61,7 @@ export function reviewCall(args: Record<string, unknown>, options: ReviewOptions
     }
     flushBlanks()
     if (options.mark?.test(line)) marked.push(i + 1)
-    quoted.push(`│ ${line}`)
+    quoted.push(`│ ${line.replace(PADDING, run => `<${run.length} blanks>`)}`)
   })
   flushBlanks()
 
