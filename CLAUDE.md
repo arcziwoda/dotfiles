@@ -10,6 +10,7 @@ Repozytorium konfiguracji środowiska na macOS. Zarządzane przez **GNU Stow** w
 - Nowe oprogramowanie instaluj przez Homebrew i dopisuj do `Brewfile`.
 - Komunikacja z użytkownikiem po polsku; komentarze/commity po angielsku.
 - Commituj małymi krokami z sensownymi opisami; nie pushuj bez wyraźnej prośby.
+- **Niezacommitowane zmiany, których nie zrobiłeś w tej sesji, są zwykle celowe** — config modyfikują inne sesje Claude i same aplikacje (Claude Code przepisuje `settings.json`, zmieniając kolejność kluczy). Gdy je zauważysz (`git status` na starcie, przed własnym commitem), przeanalizuj diff: czy zmiana ma sens, pasuje do reszty configu i zasad z tego pliku, nie wnosi sekretów ani stanu sesji (repo jest publiczne). Jeśli tak — commituj bez pytania, osobnym commitem na każdą logiczną zmianę, nie mieszając z własną pracą. Pytaj tylko, gdy intencja jest niejasna: zmiana cofa świadomą decyzję z historii (`git log -S`), wygląda na przypadkowy efekt uboczny albo jest niespójna z resztą.
 
 ## Kontekst
 
