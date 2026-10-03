@@ -3,7 +3,8 @@ import type { VaultEntry } from '../types'
 /** What the model reads in place of a secret: `«secret:discord-webhook-1»`. */
 export const placeholder = (name: string) => `«secret:${name}»`
 
-const PLACEHOLDER = /«secret:([a-z0-9-]+)»/g
+// A fresh regex per use: a shared global one carries lastIndex from call to call.
+const placeholders = () => /«secret:([a-z0-9-]+)»/g
 
 type Detector = {
   kind: string
@@ -85,12 +86,16 @@ export function mask(text: string, entries: readonly VaultEntry[]): MaskResult {
 
 /** Puts each known secret back in place of its placeholder; unknown ones stay. */
 export function unmask(text: string, entries: readonly VaultEntry[]): string {
-  return text.replace(PLACEHOLDER, (match: string, name: string) => entries.find(e => e.name === name)?.value ?? match)
+  return text.replace(placeholders(), (match: string, name: string) => entries.find(e => e.name === name)?.value ?? match)
+}
+
+/** The distinct secret names `text` refers to by placeholder, in order. */
+export function placeholderNames(text: string): string[] {
+  return [...new Set([...text.matchAll(placeholders())].map(m => m[1] ?? ''))].filter(Boolean)
 }
 
 export function hasPlaceholder(text: string): boolean {
-  PLACEHOLDER.lastIndex = 0
-  return PLACEHOLDER.test(text)
+  return placeholders().test(text)
 }
 
 /** Applies `fn` to every string in a JSON-like value, keeping its shape. */
