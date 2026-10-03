@@ -2,6 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { ApiContentBlock, EngineInterface, Register } from 'claude-code'
 
 import type { VaultEntry } from '../types'
+import { reviewCall } from './review'
 import { hasPlaceholder, mapStrings, mask, placeholder, placeholderNames, unmask } from './vault'
 
 const vault = atom({ plugin: 'secret-vault', key: 'entries' } as const, [] as VaultEntry[])
@@ -103,27 +104,34 @@ async function scrubFiles($: EngineInterface, sessionId: string): Promise<void> 
 
 const USE = 'Use secret'
 const CANCEL = 'Cancel'
-// The longest call the dialog shows; a longer one that uses a secret is
-// refused rather than shown in part, where the rest could hide where it goes.
-const MAX_REVIEWED = 4000
 
 // Text the model read can ask for a call that sends a secret somewhere (a
 // prompt injection in a page, a log, a file), so no placeholder becomes its
 // value without the person's say. The dialog shows the whole call as the
-// model wrote it, placeholders and all, never the value. Resolves the
-// refusal, or undefined when the person chose to use the secret.
-async function approveUse($: EngineInterface, tool: string, names: readonly string[], call: string): Promise<string | undefined> {
-  if (call.length > MAX_REVIEWED) {
+// model wrote it, placeholders and all, never the value (hooks/review.ts);
+// one too long to show whole is refused. Resolves the refusal, or undefined
+// when the person chose to use the secret.
+async function approveUse(
+  $: EngineInterface,
+  tool: string,
+  names: readonly string[],
+  args: Record<string, unknown>,
+): Promise<string | undefined> {
+  const review = reviewCall(args, {
+    showHosts: true,
+    mark: { label: 'Secret used', test: line => line.includes('«secret:') },
+  })
+  if (!review.isReviewable) {
     return (
-      `secret-vault: a call that uses a secret must be short enough for the user to review whole ` +
-      `(${call.length} > ${MAX_REVIEWED} characters); it did not run. Put the part that needs the secret ` +
-      `in a small call of its own, e.g. write the file without it and insert it with a short Edit.`
+      `secret-vault: a call that uses a secret must be small enough for the user to review whole ` +
+      `(${review.reason}); it did not run. Put the part that needs the secret in a small call of its ` +
+      `own, e.g. write the file without it and insert it with a short Edit.`
     )
   }
   const which = names.map(placeholder).join(', ')
   let answer: string
   try {
-    answer = await $.ui.ask(`${tool} wants the real value of ${which}:\n\n${call}\n\nRun this call with the secret?`, {
+    answer = await $.ui.ask(`${tool} asks for the real value of ${which}. The call:\n\n${review.text}\n\nRun it with the secret?`, {
       header: 'secret',
       options: [USE, CANCEL],
     })
@@ -133,37 +141,6 @@ async function approveUse($: EngineInterface, tool: string, names: readonly stri
   if (answer === USE) return undefined
   if (answer === CANCEL) return 'secret-vault: the user refused to use the secret in this call; it did not run.'
   return `secret-vault: the user did not run this call and said: ${answer}`
-}
-
-// Characters that draw as nothing or move the cursor (C0/C1 controls but
-// newline and tab, ANSI escapes, bidi overrides, zero-width marks): in the
-// dialog they could hide what the call does, so each is shown as its code.
-const HIDDEN = /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u00AD\u061C\u180E\u200B-\u200F\u2028-\u202E\u2060-\u206F\uFEFF]/g
-
-function revealHidden(text: string): { text: string; isAltered: boolean } {
-  let isAltered = false
-  const out = text.replace(HIDDEN, c => {
-    isAltered = true
-    return `<U+${c.codePointAt(0)?.toString(16).toUpperCase().padStart(4, '0')}>`
-  })
-  return { text: out, isAltered }
-}
-
-// The call as the dialog shows it: every argument the tool receives, a Bash
-// command first and verbatim, so nothing that changes how it runs is left
-// out (run_in_background, dangerouslyDisableSandbox, a description holding
-// a placeholder), with hidden characters made visible.
-function describeCall(e: Record<string, unknown>): string {
-  const { tool: _tool, tool_use_id: _id, agentId: _agent, ...args } = e
-  const { command, ...rest } = args
-  const body =
-    typeof command === 'string'
-      ? Object.keys(rest).length
-        ? `${command}\n\nwith ${JSON.stringify(rest, null, 2)}`
-        : command
-      : JSON.stringify(args, null, 2)
-  const { text, isAltered } = revealHidden(body)
-  return isAltered ? `WARNING: the call holds invisible or control characters, shown as <U+XXXX>.\n\n${text}` : text
 }
 
 export const register: Register = on => {
@@ -191,7 +168,8 @@ export const register: Register = on => {
     const known = new Set(entries.map(entry => entry.name))
     const names = String(e.tool) === 'AskUserQuestion' ? [] : placeholderNames(JSON.stringify(e)).filter(n => known.has(n))
     if (names.length) {
-      const refusal = await approveUse($, String(e.tool), names, describeCall(e))
+      const { tool: _tool, tool_use_id: _id, agentId: _agent, ...args } = e as Record<string, unknown>
+      const refusal = await approveUse($, String(e.tool), names, args)
       if (refusal) return { deny: refusal }
     }
     const input = names.length ? mapStrings(e, s => unmask(s, entries)) : e
