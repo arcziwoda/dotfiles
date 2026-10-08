@@ -129,37 +129,14 @@ fi
 # sidebar layout in herdr's config.toml decides where and how they show.
 # An empty value clears its token.
 if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
-	# An 8-cell bar. Its colour comes from herdr's starts_with rules, which see
-	# the level as a run of leading zero-width spaces (U+200B): herdr keeps them
-	# in the value but does not draw them. 1 = under 50%, 2 = 50%+, 3 = 80%+,
-	# 4 = 90%+ (herdr config.toml, $ctx rules).
-	ctx_token=''
-	if ((ctx >= 0)); then
-		zw=$'\xe2\x80\x8b'
-		if ((ctx >= 90)); then level="$zw$zw$zw$zw"
-		elif ((ctx >= 80)); then level="$zw$zw$zw"
-		elif ((ctx >= 50)); then level="$zw$zw"
-		else level=$zw
-		fi
-		filled=$(((ctx * 8 + 50) / 100))
-		((filled > 8)) && filled=8
-		bar=''
-		for ((i = 0; i < 8; i++)); do
-			if ((i < filled)); then bar+='━'; else bar+='─'; fi
-		done
-		ctx_token="$level$bar ${ctx}%"
-	fi
-
-	# Pad the model name to a fixed width so the context bar after it starts in
-	# the same column for every agent ("Opus 5.5" vs "Sonnet 4.6"). 10 columns
-	# + separator + 8-cell bar + "100%" = 26, which fits the 29 a scrolled list
-	# leaves after the indent. herdr trims
-	# whitespace off token values, so the padding ends in a zero-width space
-	# (U+200B), which is neither whitespace nor a control character to it.
-	model_token=''
-	if [[ -n $model ]]; then
-		printf -v model_token '%-10s\xe2\x80\x8b' "${model%% (*}"
-	fi
+	# The model name is shown right-aligned in the status row, which is made of
+	# state labels written by ~/.claude/hooks/herdr-status.sh. herdr cannot
+	# align a token right, so the hook pads the label itself and needs the model
+	# name: hand it over through a per-pane file. It takes effect on the next
+	# hook event.
+	model_dir="${XDG_CACHE_HOME:-$HOME/.cache}/claude/herdr-model"
+	mkdir -p "$model_dir" 2>/dev/null &&
+		printf '%s\n' "${model%% (*}" >"$model_dir/${HERDR_PANE_ID//\//_}"
 
 	# The title gets one sidebar row. A 34-wide sidebar (herdr config.toml:
 	# ui.sidebar_width) leaves 30 columns after the row indent, and 29 once the
@@ -185,8 +162,6 @@ if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
 	"${HERDR_BIN_PATH:-herdr}" pane report-metadata "$HERDR_PANE_ID" \
 		--source dotfiles:claude-statusline \
 		--token "task=$task" \
-		--token "model=$model_token" \
-		--token "ctx=$ctx_token" \
 		>/dev/null 2>&1
 fi
 

@@ -70,12 +70,14 @@ statusline() {
 			five_hour: {used_percentage: 29, resets_at: (now + 3600 | floor)},
 			seven_day: {used_percentage: 8, resets_at: (now + 86400 | floor)}}}' |
 		HERDR_ENV=1 HERDR_PANE_ID=$1 HERDR_SOCKET_PATH=$SOCK HERDR_BIN_PATH=herdr \
+		XDG_CACHE_HOME=$WORK/cache \
 			bash "$REPO/claude/.claude/statusline.sh" >/dev/null
 }
 
 # hook PANE JSON — fire a Claude Code hook event.
 hook() {
 	HERDR_ENV=1 HERDR_PANE_ID=$1 HERDR_SOCKET_PATH=$SOCK HERDR_BIN_PATH=herdr \
+		XDG_CACHE_HOME=$WORK/cache \
 		bash "$REPO/claude/.claude/hooks/herdr-status.sh" <<<"$2"
 }
 

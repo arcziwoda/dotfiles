@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 # Claude Code hook: publish what the session is doing to herdr's sidebar.
 #
-#   <warn> Bash        waiting for you (permission, question, plan)
-#   <cog>  Edit        working: the tool it is running now, or "thinking"
-#   <chk>  14:32       turn finished at that time
+#   <warn> Bash                 Opus 5.5    waiting for you (permission,
+#                                           question, plan)
+#   <cog> Edit                  Opus 5.5    working: the tool it is running
+#                                           now, or "thinking"
+#   <chk> 14:32                 Opus 5.5    turn finished at that time
 #
-# Only the tool name, never its arguments: the status is one sidebar row.
+# Only the tool name, never its arguments: the status is one sidebar row. The
+# model name sits at its right end; herdr cannot align a token right, so the
+# label is padded here, with the name statusline.sh leaves in a per-pane file.
 #
 # The text is reported as herdr state labels — one per agent state — rather
 # than a plain token. herdr shows the label of the state it currently detects
@@ -20,6 +24,8 @@ set -uo pipefail
 [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]] || exit 0
 export PATH="/opt/homebrew/bin:/usr/bin:/bin:$PATH"
 
+LC_ALL=en_US.UTF-8 # ${#} must count characters, not bytes
+
 # Nerd Font icons (U+F071, U+F013, U+F00C). Bash 3.2 (macOS /bin/bash) has no
 # \u escapes in $'...', so they are written as UTF-8 bytes.
 WARN=$'\xef\x81\xb1' COG=$'\xef\x80\x93' CHECK=$'\xef\x80\x8c'
@@ -30,6 +36,23 @@ WARN=$'\xef\x81\xb1' COG=$'\xef\x80\x93' CHECK=$'\xef\x80\x8c'
 	IFS= read -r tool
 } < <(jq -r '.hook_event_name // "", (.tool_name // "" | sub("^mcp__.*__"; ""))')
 
+# Same width as herdr's title rows: 30 columns, 29 with the list scrollbar.
+WIDTH=29
+model=''
+model_file="${XDG_CACHE_HOME:-$HOME/.cache}/claude/herdr-model/${HERDR_PANE_ID//\//_}"
+[[ -r $model_file ]] && IFS= read -r model <"$model_file"
+
+# row TEXT: TEXT with the model name right-aligned in WIDTH columns, TEXT cut
+# with an ellipsis when both do not fit. Sets $row (no subshell: this runs on
+# every tool call).
+row() {
+	row=$1
+	[[ -n $model ]] || return 0
+	local room=$((WIDTH - ${#model} - 1))
+	((${#row} > room)) && row="${row:0:room-1}"$'\xe2\x80\xa6'
+	printf -v row '%s%*s%s' "$row" $((WIDTH - ${#row} - ${#model})) '' "$model"
+}
+
 send() {
 	"${HERDR_BIN_PATH:-herdr}" pane report-metadata "$HERDR_PANE_ID" \
 		--source dotfiles:claude-hooks "$@" >/dev/null 2>&1
@@ -38,7 +61,10 @@ send() {
 # report TEXT [BLOCKED_TEXT]: TEXT (with the cog) for every state herdr may
 # show, BLOCKED_TEXT (with the warning sign) for "blocked"; it defaults to TEXT.
 report() {
-	local working="$COG $1" blocked="$WARN ${2:-$1}"
+	row "$COG $1"
+	local working=$row
+	row "$WARN ${2:-$1}"
+	local blocked=$row
 	send --state-label "working=$working" --state-label "unknown=$working" \
 		--state-label "idle=$working" --state-label "done=$working" \
 		--state-label "blocked=$blocked"
@@ -57,10 +83,14 @@ case $event in
 	PermissionRequest) report "$tool" ;;
 	PostToolUse) report thinking 'needs input' ;; # only AskUserQuestion, ExitPlanMode
 	Stop)
-		done_label="$CHECK $(date +%H:%M)"
+		row "$CHECK $(date +%H:%M)"
+		done_label=$row
+		row "$COG thinking"
+		working_label=$row
+		row "$WARN needs input"
 		send --state-label "idle=$done_label" --state-label "done=$done_label" \
-			--state-label "unknown=$done_label" --state-label "working=$COG thinking" \
-			--state-label "blocked=$WARN needs input"
+			--state-label "unknown=$done_label" --state-label "working=$working_label" \
+			--state-label "blocked=$row"
 		;;
 	SessionStart | SessionEnd) send --clear-state-labels ;;
 esac

@@ -17,8 +17,8 @@ For every Claude Code pane, the agent list renders (herdr `config.toml`,
 ```
 ◐ dotfiles · 2                       state icon, workspace, tab
   Refactor forecast ingestion…       $task   session title, cut at a word
-   Bash                             state_text  waiting / working / done
-  Sonnet 4.6 · ━━━━━━━─ 85%          $model + $ctx (8-cell context bar)
+   Bash             Sonnet 4.6     state_text  waiting / working / done,
+                                                 model right-aligned
 ```
 
 The right end of the tab bar shows the account quota: `5h 29%  14:50 · 7d 8%`.
@@ -37,7 +37,7 @@ from the `dotfiles.space-status` plugin:
 | File | Role |
 |---|---|
 | `herdr/.config/herdr/config.toml` | Keymap (tmux-like), Macchiato theme overrides, sidebar row layout and colour rules, tab-bar quota entry, plugin key bindings |
-| `claude/.claude/statusline.sh` | Claude Code status line. Inside herdr also publishes `$task`, `$model`, `$ctx` and writes the quota cache |
+| `claude/.claude/statusline.sh` | Claude Code status line. Inside herdr also publishes `$task`, leaves the model name for the hook in `~/.cache/claude/herdr-model/<pane>` and writes the quota cache |
 | `claude/.claude/hooks/herdr-status.sh` | Claude Code hook (see below). Publishes the status (tool name only) as herdr **state labels** |
 | `herdr/.config/herdr/local-plugins/space-status/` | Our herdr plugin (`dotfiles.space-status`). Reports `$dirty` and `$pr` per workspace on startup, `workspace.focused` and `pane.agent_status_changed`; see the header of `refresh.sh` |
 | `zsh/.config/zsh/herdr-space.zsh` | `precmd` inside herdr: refreshes `$dirty` of the pane's workspace after every command, in the background |
@@ -61,14 +61,14 @@ Hooks registered in `claude/.claude/settings.json`:
 ## Data flow
 
 ```
-Claude Code ──status line JSON──▶ statusline.sh ──report-metadata──▶ $task $model $ctx
-     │                                   └──▶ ~/.cache/claude/rate-limits ──▶ claude-quota.sh ──▶ tab bar
+Claude Code ──status line JSON──▶ statusline.sh ──report-metadata──▶ $task
+     │                                   ├──▶ ~/.cache/claude/rate-limits ──▶ claude-quota.sh ──▶ tab bar
+     │                                   └──▶ ~/.cache/claude/herdr-model/<pane> ──▶ herdr-status.sh
      └──hook JSON──▶ herdr-status.sh ──report-metadata──▶ state labels (per state)
 ```
 
 All reports use `herdr pane report-metadata $HERDR_PANE_ID`, with source
-`dotfiles:claude-statusline` (status line) or `dotfiles:claude-hooks` (hook and
-plugin). Everything is a no-op unless `HERDR_ENV=1`, so the same scripts run
+`dotfiles:claude-statusline` (status line) or `dotfiles:claude-hooks` (hook). Everything is a no-op unless `HERDR_ENV=1`, so the same scripts run
 harmlessly under tmux.
 
 ### Why state labels
@@ -122,8 +122,8 @@ revert its commit, `herdr plugin unlink dotfiles.space-status`,
 
 - **Widths.** The sidebar is 34 columns (`ui.sidebar_width`). After the row
   indent that leaves 30 columns, and 29 once the agent list overflows and herdr
-  takes a column for its scrollbar. Titles are cut at 29; model (10)
-  + separator (3) + bar (8) + `100%` (4) = 25 fits.
+  takes a column for its scrollbar. Titles are cut at 29, and the status row
+  is padded to exactly 29.
 - **Character counting.** Scripts set `LC_ALL=en_US.UTF-8` so `${#var}` counts
   characters; Polish letters would otherwise count double. macOS runs these
   under `/bin/bash` 3.2: no `\u` escapes in `$'...'` (use UTF-8 bytes), no
@@ -132,14 +132,15 @@ revert its commit, `herdr plugin unlink dotfiles.space-status`,
   (`◐◑↻▰⚙`) is drawn by Ghostty from a fallback font. Status icons are Nerd
   Font PUA: U+F071 warning, U+F013 cog, U+F00C check; U+F017 clock in the tab
   bar.
-- **Zero-width spaces (U+200B).** herdr trims whitespace from token values but
-  keeps U+200B and does not draw it. Used twice: to end the padded `$model`
-  (otherwise trailing spaces vanish and the bar shifts), and as a 1–4 character
-  prefix on `$ctx` encoding the colour level, because `starts_with` rules are
-  the only way to colour by value (50/80/90% do not fall on whole cells of an
-  8-cell bar).
+- **No right alignment.** A row is tokens joined by `·`; there is no align,
+  width or spacer option. The model name is right-aligned by padding the state
+  label with spaces (herdr trims only the ends of a value), so the hook needs
+  the model name, which only the status line receives: hence the per-pane
+  file. A `/model` switch shows on the next hook event. herdr also keeps
+  U+200B in values without drawing it, if a token ever needs trailing padding.
 - **Colours are per token.** A token has one colour; rules match only the
-  token's own text. The tab-bar status entry has no style option at all, so
+  token's own text. The model name is part of the status label, so it takes
+  the status colour. The tab-bar status entry has no style option at all, so
   the quota is made readable by raising the theme's `overlay1` (herdr's colour
   for that entry) to Macchiato subtext1.
 - **Cost.** `herdr-status.sh` runs synchronously before every tool call. Keep
@@ -193,7 +194,6 @@ false "done" notifications on startup and restored sessions.
 
 ## Known limitations
 
-- Model names longer than 10 columns shift the context bar by the excess.
 - A denied permission shows the denied tool's name with the cog until the
   next event.
 - The worktree hook informs Claude but does not enforce isolation; Claude
