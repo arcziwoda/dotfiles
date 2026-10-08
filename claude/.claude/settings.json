@@ -1,9 +1,9 @@
 {
-  "permissions": {
-    "defaultMode": "auto"
-  },
   "env": {
     "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/secret-vault"
+  },
+  "permissions": {
+    "defaultMode": "auto"
   },
   "hooks": {
     "SessionStart": [
@@ -134,6 +134,7 @@
   },
   "outputStyle": "Direct",
   "language": "Polish",
+  "syntaxHighlightingDisabled": false,
   "tui": "fullscreen",
   "voice": {
     "enabled": true,
