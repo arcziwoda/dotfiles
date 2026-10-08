@@ -122,13 +122,20 @@
     "typescript-lsp@claude-plugins-official": true,
     "jdtls-lsp@claude-plugins-official": true,
     "cc-plugin-you-should-know@builtin": true,
-    "filetree@claude-code-filetree": true
+    "filetree@claude-code-filetree": true,
+    "reflect-mod@claude-reflect-marketplace": true
   },
   "extraKnownMarketplaces": {
     "claude-code-filetree": {
       "source": {
         "source": "github",
         "repo": "data-goblin/claude-code-filetree"
+      }
+    },
+    "claude-reflect-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "BayramAnnakov/claude-reflect"
       }
     }
   },
