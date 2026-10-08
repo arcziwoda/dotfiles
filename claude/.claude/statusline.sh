@@ -129,14 +129,15 @@ fi
 # sidebar layout in herdr's config.toml decides where and how they show.
 # An empty value clears its token.
 if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
-	# The model name is shown right-aligned in the status row, which is made of
-	# state labels written by ~/.claude/hooks/herdr-status.sh. herdr cannot
-	# align a token right, so the hook pads the label itself and needs the model
-	# name: hand it over through a per-pane file. It takes effect on the next
-	# hook event.
+	# $model ends the status row, after the state labels written by
+	# ~/.claude/hooks/herdr-status.sh. herdr cannot align a token right, so the
+	# hook pads the label to push the model to the right end and needs its
+	# width: hand the name over through a per-pane file. A changed width takes
+	# effect on the next hook event.
+	short_model=${model%% (*}
 	model_dir="${XDG_CACHE_HOME:-$HOME/.cache}/claude/herdr-model"
 	mkdir -p "$model_dir" 2>/dev/null &&
-		printf '%s\n' "${model%% (*}" >"$model_dir/${HERDR_PANE_ID//\//_}"
+		printf '%s\n' "$short_model" >"$model_dir/${HERDR_PANE_ID//\//_}"
 
 	# The title gets one sidebar row. A 34-wide sidebar (herdr config.toml:
 	# ui.sidebar_width) leaves 30 columns after the row indent, and 29 once the
@@ -162,6 +163,7 @@ if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
 	"${HERDR_BIN_PATH:-herdr}" pane report-metadata "$HERDR_PANE_ID" \
 		--source dotfiles:claude-statusline \
 		--token "task=$task" \
+		--token "model=$short_model" \
 		>/dev/null 2>&1
 fi
 

@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 # Claude Code hook: publish what the session is doing to herdr's sidebar.
 #
-#   <warn> Bash                 Opus 5.5    waiting for you (permission,
-#                                           question, plan)
-#   <cog> Edit                  Opus 5.5    working: the tool it is running
-#                                           now, or "thinking"
-#   <chk> 14:32                 Opus 5.5    turn finished at that time
+#   <warn> Bash        waiting for you (permission, question, plan)
+#   <cog>  Edit        working: the tool it is running now, or "thinking"
+#   <chk>  14:32       turn finished at that time
 #
-# Only the tool name, never its arguments: the status is one sidebar row. The
-# model name sits at its right end; herdr cannot align a token right, so the
-# label is padded here, with the name statusline.sh leaves in a per-pane file.
+# Only the tool name, never its arguments: the status is one sidebar row,
+# followed by herdr's " · " separator and the $model token from statusline.sh.
+# herdr cannot align a token right, so the label is padded here to push the
+# model to the row's right end; its width comes from the per-pane file
+# statusline.sh leaves next to the token.
 #
 # The text is reported as herdr state labels — one per agent state — rather
 # than a plain token. herdr shows the label of the state it currently detects
@@ -42,15 +42,17 @@ model=''
 model_file="${XDG_CACHE_HOME:-$HOME/.cache}/claude/herdr-model/${HERDR_PANE_ID//\//_}"
 [[ -r $model_file ]] && IFS= read -r model <"$model_file"
 
-# row TEXT: TEXT with the model name right-aligned in WIDTH columns, TEXT cut
-# with an ellipsis when both do not fit. Sets $row (no subshell: this runs on
-# every tool call).
+# row TEXT: TEXT padded so that it, the " · " separator and the model name
+# fill WIDTH columns; cut with an ellipsis when they do not fit. herdr trims
+# trailing whitespace, so the padding ends in a zero-width space (U+200B),
+# which it keeps but does not draw. Sets $row (no subshell: this runs on every
+# tool call).
 row() {
 	row=$1
 	[[ -n $model ]] || return 0
-	local room=$((WIDTH - ${#model} - 1))
+	local room=$((WIDTH - ${#model} - 3))
 	((${#row} > room)) && row="${row:0:room-1}"$'\xe2\x80\xa6'
-	printf -v row '%s%*s%s' "$row" $((WIDTH - ${#row} - ${#model})) '' "$model"
+	printf -v row '%s%*s\xe2\x80\x8b' "$row" $((room - ${#row})) ''
 }
 
 send() {

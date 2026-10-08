@@ -17,8 +17,8 @@ For every Claude Code pane, the agent list renders (herdr `config.toml`,
 ```
 ◐ dotfiles · 2                       state icon, workspace, tab
   Refactor forecast ingestion…       $task   session title, cut at a word
-   Bash             Sonnet 4.6     state_text  waiting / working / done,
-                                                 model right-aligned
+   Bash        · Sonnet 4.6     state_text (waiting / working / done)
+                                               + $model, right-aligned
 ```
 
 The right end of the tab bar shows the account quota: `5h 29%  14:50 · 7d 8%`.
@@ -37,7 +37,7 @@ from the `dotfiles.space-status` plugin:
 | File | Role |
 |---|---|
 | `herdr/.config/herdr/config.toml` | Keymap (tmux-like), Macchiato theme overrides, sidebar row layout and colour rules, tab-bar quota entry, plugin key bindings |
-| `claude/.claude/statusline.sh` | Claude Code status line. Inside herdr also publishes `$task`, leaves the model name for the hook in `~/.cache/claude/herdr-model/<pane>` and writes the quota cache |
+| `claude/.claude/statusline.sh` | Claude Code status line. Inside herdr also publishes `$task` and `$model`, leaves the model name for the hook in `~/.cache/claude/herdr-model/<pane>` and writes the quota cache |
 | `claude/.claude/hooks/herdr-status.sh` | Claude Code hook (see below). Publishes the status (tool name only) as herdr **state labels** |
 | `herdr/.config/herdr/local-plugins/space-status/` | Our herdr plugin (`dotfiles.space-status`). Reports `$dirty` and `$pr` per workspace on startup, `workspace.focused` and `pane.agent_status_changed`; see the header of `refresh.sh` |
 | `zsh/.config/zsh/herdr-space.zsh` | `precmd` inside herdr: refreshes `$dirty` of the pane's workspace after every command, in the background |
@@ -61,7 +61,7 @@ Hooks registered in `claude/.claude/settings.json`:
 ## Data flow
 
 ```
-Claude Code ──status line JSON──▶ statusline.sh ──report-metadata──▶ $task
+Claude Code ──status line JSON──▶ statusline.sh ──report-metadata──▶ $task $model
      │                                   ├──▶ ~/.cache/claude/rate-limits ──▶ claude-quota.sh ──▶ tab bar
      │                                   └──▶ ~/.cache/claude/herdr-model/<pane> ──▶ herdr-status.sh
      └──hook JSON──▶ herdr-status.sh ──report-metadata──▶ state labels (per state)
@@ -132,15 +132,17 @@ revert its commit, `herdr plugin unlink dotfiles.space-status`,
   (`◐◑↻▰⚙`) is drawn by Ghostty from a fallback font. Status icons are Nerd
   Font PUA: U+F071 warning, U+F013 cog, U+F00C check; U+F017 clock in the tab
   bar.
-- **No right alignment.** A row is tokens joined by `·`; there is no align,
-  width or spacer option. The model name is right-aligned by padding the state
-  label with spaces (herdr trims only the ends of a value), so the hook needs
-  the model name, which only the status line receives: hence the per-pane
-  file. A `/model` switch shows on the next hook event. herdr also keeps
-  U+200B in values without drawing it, if a token ever needs trailing padding.
+- **No right alignment.** A row is tokens joined by ` · `; there is no align,
+  width or spacer option. `$model` is pushed to the right edge by padding the
+  state label before it, so the hook needs the model name's width, which only
+  the status line receives: hence the per-pane file. After `/model` switches
+  to a name of another width, the alignment is off until the next hook event.
+- **Zero-width spaces (U+200B).** herdr trims whitespace from token values but
+  keeps U+200B and does not draw it. The padded state label ends in one, or
+  its trailing spaces would vanish.
 - **Colours are per token.** A token has one colour; rules match only the
-  token's own text. The model name is part of the status label, so it takes
-  the status colour. The tab-bar status entry has no style option at all, so
+  token's own text. That is why the model is a separate token rather than
+  part of the padded status label: it keeps its own colour. The tab-bar status entry has no style option at all, so
   the quota is made readable by raising the theme's `overlay1` (herdr's colour
   for that entry) to Macchiato subtext1.
 - **Cost.** `herdr-status.sh` runs synchronously before every tool call. Keep
