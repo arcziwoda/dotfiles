@@ -161,26 +161,30 @@ if [[ ${HERDR_ENV:-} == 1 && -n ${HERDR_PANE_ID:-} ]]; then
 		printf -v model_token '%-10s\xe2\x80\x8b' "${model%% (*}"
 	fi
 
-	# Sidebar rows are single lines that herdr truncates, so split the title
-	# at a word boundary into two tokens. A 34-wide sidebar (herdr config.toml:
+	# The title gets one sidebar row. A 34-wide sidebar (herdr config.toml:
 	# ui.sidebar_width) leaves 30 columns after the row indent, and 29 once the
-	# agent list overflows and herdr takes a column for its scrollbar — so wrap
-	# at 29. ${#} must count characters, not bytes, or Polish titles wrap early.
+	# agent list overflows and herdr takes a column for its scrollbar. A longer
+	# title is cut at a word boundary and ends in an ellipsis instead of being
+	# truncated mid-word by herdr. ${#} must count characters, not bytes, or
+	# Polish titles are cut early.
 	LC_ALL=en_US.UTF-8
-	task='' task2=''
-	read -r -a words <<<"$session_name"
-	for word in ${words[@]+"${words[@]}"}; do
-		if [[ -z $task2 ]] && ((${#task} + ${#word} + 1 <= 29 || ${#task} == 0)); then
-			task+="${task:+ }$word"
-		else
-			task2+="${task2:+ }$word"
-		fi
-	done
+	task=$session_name
+	if ((${#task} > 29)); then
+		task=''
+		read -r -a words <<<"$session_name"
+		for word in "${words[@]}"; do
+			next="${task:+$task }$word"
+			((${#next} <= 28)) || break
+			task=$next
+		done
+		# A first word longer than the row: cut it, herdr would anyway.
+		[[ -n $task ]] || task=${words[0]:0:28}
+		task+=$'\xe2\x80\xa6'
+	fi
 
 	"${HERDR_BIN_PATH:-herdr}" pane report-metadata "$HERDR_PANE_ID" \
 		--source dotfiles:claude-statusline \
 		--token "task=$task" \
-		--token "task2=$task2" \
 		--token "model=$model_token" \
 		--token "ctx=$ctx_token" \
 		>/dev/null 2>&1

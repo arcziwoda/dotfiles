@@ -139,9 +139,9 @@ tab_bar_right = [
 ]
 tab_bar_right_separator = "  "
 
-# Claude rows get their own layout; $task, $task2, $model and $ctx are pane
-# metadata published by ~/.claude/statusline.sh ($task2 is the second half of
-# a title too long for one line). Tokens without a value disappear, and so
+# Claude rows get their own layout; $task, $model and $ctx are pane metadata
+# published by ~/.claude/statusline.sh ($task is the session title, cut to one
+# row). Tokens without a value disappear, and so
 # does a row with none left.
 [ui.sidebar.agents]
 row_gap = 1
@@ -170,7 +170,6 @@ rows = [
 claude = [
   ["state_icon", "workspace", "tab"],
   [{ token = "$task", fg = "#b8c0e0" }],
-  [{ token = "$task2", fg = "#b8c0e0" }],
   # From ~/.claude/hooks/herdr-status.sh, reported as state labels so herdr
   # picks the one for the state it detects: waiting / working / finished.
   # herdr's own "idle"/"working"/"done" text (before the first hook event) is
