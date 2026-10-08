@@ -82,6 +82,11 @@ no "permission granted" hook event, so a plain token would stay on the warning
 until the next event. The `state_text` rules in `config.toml` hide herdr's
 default `idle`/`working`/`done` words shown before the first hook event.
 
+A question (`AskUserQuestion`) or plan (`ExitPlanMode`) on screen is detected
+by herdr as `done`/`idle`, not `blocked`, so for those the warning goes into
+every state label except `working`. `PermissionRequest` can follow
+`PreToolUse` for these tools and must not replace the text with the tool name.
+
 ### Why only the tool name
 
 The status is one row: the tool name (`Bash`, `Read`, an MCP tool without its

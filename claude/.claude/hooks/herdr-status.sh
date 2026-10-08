@@ -72,17 +72,28 @@ report() {
 		--state-label "blocked=$blocked"
 }
 
+# asking TEXT: Claude waits on you while a question or plan is on screen.
+# herdr detects that screen as done/idle rather than blocked, so every state
+# but "working" gets the warning; PostToolUse resets it.
+asking() {
+	row "$COG thinking"
+	local working=$row
+	row "$WARN $1"
+	send --state-label "working=$working" --state-label "unknown=$row" \
+		--state-label "idle=$row" --state-label "done=$row" \
+		--state-label "blocked=$row"
+}
+
+# PermissionRequest can follow PreToolUse for these tools too; it must not
+# replace the question or plan with the tool name.
+case $event:$tool in
+	PreToolUse:AskUserQuestion | PermissionRequest:AskUserQuestion) asking question ;;
+	PreToolUse:ExitPlanMode | PermissionRequest:ExitPlanMode) asking plan ;;
+	PreToolUse:* | PermissionRequest:*) report "$tool" ;;
+esac
+
 case $event in
 	UserPromptSubmit) report thinking 'needs input' ;;
-	PreToolUse)
-		case $tool in
-			# Waiting on you while the tool itself runs; PostToolUse resets it.
-			AskUserQuestion) report thinking question ;;
-			ExitPlanMode) report thinking plan ;;
-			*) report "$tool" ;;
-		esac
-		;;
-	PermissionRequest) report "$tool" ;;
 	PostToolUse) report thinking 'needs input' ;; # only AskUserQuestion, ExitPlanMode
 	Stop)
 		row "$CHECK $(date +%H:%M)"
