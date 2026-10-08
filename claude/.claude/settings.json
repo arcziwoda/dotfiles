@@ -132,7 +132,7 @@
     "mode": "hold"
   },
   "skipWorkflowUsageWarning": true,
-  "theme": "dark",
+  "theme": "custom:catppuccin-macchiato",
   "editorMode": "vim",
   "switchModelsOnFlag": false,
   "voiceEnabled": true
