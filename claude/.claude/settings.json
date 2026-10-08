@@ -134,7 +134,10 @@
   },
   "outputStyle": "Direct",
   "language": "Polish",
+  "feedbackDrafts": "notify",
   "syntaxHighlightingDisabled": false,
+  "promptSuggestionEnabled": false,
+  "awaySummaryEnabled": false,
   "tui": "fullscreen",
   "voice": {
     "enabled": true,
