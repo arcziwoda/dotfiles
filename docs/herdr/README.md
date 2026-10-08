@@ -18,8 +18,7 @@ For every Claude Code pane, the agent list renders (herdr `config.toml`,
 ◐ dotfiles · 2                       state icon, workspace, tab
   Refactor forecast ingestion        $task   session title, wrapped
   pipeline and retry policy          $task2  at a word boundary
-   Bash: Check comment-back on      state_text  waiting / working / done
-  source PR before merging           $status2b or $status2w (continuation)
+   Bash                             state_text  waiting / working / done
   Sonnet 4.6 · ━━━━━━━─ 85%          $model + $ctx (8-cell context bar)
 ```
 
@@ -40,8 +39,7 @@ from the `dotfiles.space-status` plugin:
 |---|---|
 | `herdr/.config/herdr/config.toml` | Keymap (tmux-like), Macchiato theme overrides, sidebar row layout and colour rules, tab-bar quota entry, plugin key bindings |
 | `claude/.claude/statusline.sh` | Claude Code status line. Inside herdr also publishes `$task`, `$task2`, `$model`, `$ctx` and writes the quota cache |
-| `claude/.claude/hooks/herdr-status.sh` | Claude Code hook (see below). Publishes the status as herdr **state labels** plus `$status2w`/`$status2b`/`$tailw`/`$tailb` |
-| `herdr/.config/herdr/local-plugins/claude-status/` | Our herdr plugin (`dotfiles.claude-status`). On `pane.agent_status_changed` copies the right tail into `$status2w` or `$status2b` |
+| `claude/.claude/hooks/herdr-status.sh` | Claude Code hook (see below). Publishes the status (tool name only) as herdr **state labels** |
 | `herdr/.config/herdr/local-plugins/space-status/` | Our herdr plugin (`dotfiles.space-status`). Reports `$dirty` and `$pr` per workspace on startup, `workspace.focused` and `pane.agent_status_changed`; see the header of `refresh.sh` |
 | `zsh/.config/zsh/herdr-space.zsh` | `precmd` inside herdr: refreshes `$dirty` of the pane's workspace after every command, in the background |
 | `herdr/.config/herdr/claude-quota.sh` | Tab-bar `command` entry. Reads `~/.cache/claude/rate-limits` (written by `statusline.sh`) |
@@ -67,8 +65,6 @@ Hooks registered in `claude/.claude/settings.json`:
 Claude Code ──status line JSON──▶ statusline.sh ──report-metadata──▶ $task $task2 $model $ctx
      │                                   └──▶ ~/.cache/claude/rate-limits ──▶ claude-quota.sh ──▶ tab bar
      └──hook JSON──▶ herdr-status.sh ──report-metadata──▶ state labels (per state)
-                                                   └──▶ $tailw $tailb, $status2w | $status2b
-herdr screen detection ──pane.agent_status_changed──▶ claude-status plugin ──▶ $status2w | $status2b
 ```
 
 All reports use `herdr pane report-metadata $HERDR_PANE_ID`, with source
@@ -78,8 +74,8 @@ harmlessly under tmux.
 
 ### Why state labels
 
-The status (`<warn> waiting`, `<cog> working`, `<check> 14:32`) is not a
-plain token. The hook sets a label for **every** herdr state in one call:
+The status (`<warn> Bash`, `<cog> Read`, `<cog> thinking`, `<check> 14:32`)
+is not a plain token. The hook sets a label for **every** herdr state in one call:
 warning text for `blocked`, activity text for the rest. herdr shows the label
 of the state it currently detects from the screen, so when a permission prompt
 is answered the row flips from warning to activity immediately. Claude Code has
@@ -87,13 +83,13 @@ no "permission granted" hook event, so a plain token would stay on the warning
 until the next event. The `state_text` rules in `config.toml` hide herdr's
 default `idle`/`working`/`done` words shown before the first hook event.
 
-### Why two continuation tokens and a plugin
+### Why only the tool name
 
-A long status wraps into a second row. Plain tokens cannot depend on the
-state, so that row exists twice: `$status2w` (activity colour) and `$status2b`
-(warning colour), only one non-empty. The hook stores both tails (`$tailw`,
-`$tailb`, not rendered) and shows the one matching the state its event implies;
-the plugin swaps them on each state change herdr detects.
+The status is one row: the tool name (`Bash`, `Read`, an MCP tool without its
+server prefix), `thinking`, `question`, `plan` or `needs input`, never the
+tool's arguments. Earlier versions showed the command or file and wrapped it
+into a second row, which made each agent entry too tall; keeping that row in
+the right colour also needed a plugin (`dotfiles.claude-status`, removed).
 
 ### Spaces panel tokens
 
@@ -127,7 +123,7 @@ revert its commit, `herdr plugin unlink dotfiles.space-status`,
 
 - **Widths.** The sidebar is 34 columns (`ui.sidebar_width`). After the row
   indent that leaves 30 columns, and 29 once the agent list overflows and herdr
-  takes a column for its scrollbar. Titles and statuses wrap at 29; model (10)
+  takes a column for its scrollbar. Titles wrap at 29; model (10)
   + separator (3) + bar (8) + `100%` (4) = 25 fits.
 - **Character counting.** Scripts set `LC_ALL=en_US.UTF-8` so `${#var}` counts
   characters; Polish letters would otherwise count double. macOS runs these
@@ -199,8 +195,7 @@ false "done" notifications on startup and restored sessions.
 ## Known limitations
 
 - Model names longer than 10 columns shift the context bar by the excess.
-- A denied permission shows the activity text of the denied tool until the
+- A denied permission shows the denied tool's name with the cog until the
   next event.
-- Two-row limit: text beyond the second row is truncated by herdr.
 - The worktree hook informs Claude but does not enforce isolation; Claude
   Code's own checks apply only to worktrees it creates (`claude -w`).

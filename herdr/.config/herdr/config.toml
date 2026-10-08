@@ -174,9 +174,7 @@ claude = [
   # From ~/.claude/hooks/herdr-status.sh, reported as state labels so herdr
   # picks the one for the state it detects: waiting / working / finished.
   # herdr's own "idle"/"working"/"done" text (before the first hook event) is
-  # hidden. The wrapped rest of a long status is $status2w (activity) or
-  # $status2b (waiting); the claude-status plugin keeps only the one matching
-  # the current state non-empty.
+  # hidden.
   [{ token = "state_text", fg = "#8bd5ca", rules = [
     { starts_with = "\uf071", fg = "#f5a97f", bold = true },
     { starts_with = "\uf00c", fg = "#a6da95" },
@@ -185,8 +183,6 @@ claude = [
     { equals = "done", hide = true },
     { equals = "blocked", fg = "#f5a97f", bold = true },
   ] }],
-  [{ token = "$status2w", fg = "#8bd5ca" }],
-  [{ token = "$status2b", fg = "#f5a97f", bold = true }],
   [
     { token = "$model", fg = "#8aadf4" },
     # statusline.sh prefixes the value with 1-4 zero-width spaces for the

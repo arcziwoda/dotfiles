@@ -65,7 +65,7 @@ if ! grep -qF "version = \"${NAVIGATOR_TAG#v}\"" "$NAVIGATOR_DIR/herdr-plugin.to
   herdr plugin link "$NAVIGATOR_DIR" >/dev/null
 fi
 # Our own plugins, versioned in the herdr package and stowed first.
-for plugin in claude-status space-status; do
+for plugin in space-status; do
   if ! herdr plugin list | grep -qF "dotfiles.$plugin"; then
     herdr plugin link "$HOME/.config/herdr/local-plugins/$plugin" >/dev/null
   fi
