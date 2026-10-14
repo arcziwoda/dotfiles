@@ -7,7 +7,7 @@ the constraints that shaped the design, how to test visual changes, and what
 to check when herdr is upgraded. Short gotchas live in the root `CLAUDE.md`;
 the key map is in the root `README.md`.
 
-Written against herdr 0.9.1–0.9.3 and Claude Code v2.1.2xx.
+Written against herdr 0.9.1–0.9.4 and Claude Code v2.1.2xx.
 
 ## What the sidebar shows
 
@@ -182,8 +182,30 @@ testing by hand, do the same (`env -u HERDR_ENV -u HERDR_SOCKET_PATH …`).
 ## Upgrading herdr
 
 `brew upgrade herdr` replaces the client; a running server keeps the old
-version until it restarts, and a restart ends pane processes (layout and
-Claude conversations are restored). After upgrading:
+version until it is replaced. Hooks and the status line keep working in
+between as long as `herdr status` shows `private_protocol_compatible: yes`
+(they call `$HERDR_BIN_PATH`, the `/opt/homebrew/bin/herdr` symlink, so they
+use the new client).
+
+A new version can be tried before installing it: `brew fetch herdr`, unpack
+`$(brew --cache herdr)` into a scratch directory and put its `bin/` first in
+`PATH` for the harness (and for `herdr server live-handoff` below, to test the
+upgrade itself on the harness session).
+
+To move the live server to the new binary without ending pane processes:
+
+```sh
+herdr server live-handoff --import-exe "$(brew --prefix)/bin/herdr" --expected-version <new>
+```
+
+It passes the pane terminals to a new server process; the client reconnects
+by itself. Agent states come back within ~2 s and `space-status` reports on
+its startup hook, but pane metadata is not carried over: the Claude rows lose
+`$task`, `$model` and the status until that session's next status line or
+hook event. `herdr server stop` and a fresh start end every pane process
+(layout and Claude conversations are restored).
+
+After upgrading:
 
 1. Read the release notes for changes to agent detection, sidebar tokens and
    rules, `report-metadata`, state labels, plugin events and key names.
@@ -191,13 +213,22 @@ Claude conversations are restored). After upgrading:
    `SessionStart` entry in `settings.json` through the symlink; commit that).
 3. `herdr --skill > claude/.claude/skills/herdr/SKILL.md`.
 4. Check the pinned plugin tags in `bootstrap.sh` (`REVIEWR_TAG`,
-   `NAVIGATOR_TAG`) against new releases.
+   `NAVIGATOR_TAG`) against new releases. Do not use `herdr plugin update`
+   (0.9.4+): it moves GitHub plugins to their latest release, away from the
+   tag `bootstrap.sh` installs on a new machine. Bump the tag and rerun the
+   install line instead.
 5. Run the harness and look at the render.
 
 Known upgrade notes: 0.9.2 broke Escape-prefixed keys (Alt/Option chords such
 as our `alt+h/j/k/l`, `alt+s`); 0.9.3 fixed it, so skip 0.9.2. 0.9.2 also sets
 `TERM_PROGRAM=herdr` in new panes (previously inherited `ghostty`) and fixes
-false "done" notifications on startup and restored sessions.
+false "done" notifications on startup and restored sessions. 0.9.4 reworked
+key input; `alt+h/l` were checked in both encodings (`ESC h` and CSI-u),
+`alt+s` as `ESC s`. It
+also asks before closing a workspace's only pane (`prefix x` there), as it
+already did for the last tab; `ui.confirm_close = false` turns off all three
+prompts. Since 0.9.4 closing the shell that started the server no longer
+stops it.
 
 ## Known limitations
 
