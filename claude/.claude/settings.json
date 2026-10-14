@@ -152,6 +152,6 @@
   "skipWorkflowUsageWarning": true,
   "theme": "custom:catppuccin-macchiato",
   "editorMode": "vim",
-  "switchModelsOnFlag": false,
+  "switchModelsOnFlag": true,
   "voiceEnabled": true
 }
