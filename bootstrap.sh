@@ -6,7 +6,7 @@ set -euo pipefail
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TMUX_PLUGINS="$HOME/.local/share/tmux/plugins"
 CATPPUCCIN_TMUX_TAG="v2.3.0"
-REVIEWR_TAG="v0.39.0"
+REVIEWR_TAG="v0.46.0"
 NAVIGATOR_TAG="v0.3.6"
 NAVIGATOR_DIR="$HOME/.local/share/herdr/local-plugins/herdr-navigator"
 
