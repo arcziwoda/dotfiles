@@ -194,6 +194,7 @@
   },
   "outputStyle": "Direct",
   "language": "Polish",
+  "cleanupPeriodDays": 365,
   "feedbackDrafts": "notify",
   "syntaxHighlightingDisabled": false,
   "promptSuggestionEnabled": false,
