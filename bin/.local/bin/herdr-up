@@ -46,13 +46,24 @@ herdr machine list | while IFS=$'\t' read -r _ label target _ state; do
 	' </dev/null || echo "machine $label: update failed, see above" >&2
 done
 
+# Plugin tags are pinned in bootstrap.sh. Only report newer releases: they
+# come often and sometimes move default keys (reviewr 0.44 took `:`), so a
+# bump follows reading the notes.
+for pin in REVIEWR_TAG=persiyanov/herdr-reviewr NAVIGATOR_TAG=thanhdat77/herdr-navigator; do
+	var=${pin%%=*} gh_repo=${pin#*=}
+	pinned=$(sed -n "s/^$var=\"\(.*\)\"\$/\1/p" "$repo/bootstrap.sh")
+	latest=$(curl -fsSL "https://api.github.com/repos/$gh_repo/releases/latest" | jq -r .tag_name) || continue
+	if [[ $latest != "$pinned" ]]; then
+		echo "plugin $gh_repo: $pinned -> $latest available (https://github.com/$gh_repo/releases); bump $var in bootstrap.sh"
+	fi
+done
+
 if [[ $old != "$new" ]]; then
 	herdr --skill >"$repo/claude/.claude/skills/herdr/SKILL.md"
 	cat <<EOF
 
 herdr $old -> $new. Still to do (docs/herdr/README.md, "Upgrading herdr"):
   - release notes: https://github.com/herdrdev/herdr/releases/tag/v$new
-  - pinned plugin tags in bootstrap.sh (REVIEWR_TAG, NAVIGATOR_TAG)
   - render check: docs/herdr/harness/harness.sh
   - commit the regenerated skill: git -C $repo status
 EOF

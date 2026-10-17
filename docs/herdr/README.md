@@ -187,7 +187,8 @@ integration when `herdr integration status` reports it outdated, then over SSH
 on every enabled saved machine (`herdr machine list`; the OrbStack `kali`
 machine) `herdr update --handoff` plus the same integration check — those run
 a direct install in `~/.local/bin`, where herdr's own updater applies — and
-regenerating the skill. It prints the remaining manual steps (1, 4, 5 below).
+regenerating the skill. It also reports newer releases of the plugins pinned
+in `bootstrap.sh` (step 4) and prints the remaining manual steps (1, 5 below).
 Updates stay manual on purpose: 0.9.2 broke Alt chords, so read the release
 notes before running it.
 
