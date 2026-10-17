@@ -18,8 +18,13 @@ bindkey -M vicmd '\es' sesh-sessions
 # by default). NO_AUTO_TMUX=1 gives a plain shell. HERDR_ENV is set inside
 # herdr panes — without that guard every herdr pane would start tmux, and herdr
 # would then see `tmux` instead of the agent running in the pane.
+# A window that starts in $TMPDIR was opened by an app to run a script there:
+# OrbStack's Terminal button writes one to $TMPDIR and opens it in Ghostty,
+# which starts the shell in the script's directory and types `<script>; exit`.
+# The multiplexer would swallow that input, so keep the plain shell.
 if [[ -o interactive && -z $TMUX && -z $HERDR_ENV && -z $NVIM \
-      && -z $VSCODE_INJECTION && -z $INSIDE_EMACS && -z $NO_AUTO_TMUX ]]; then
+      && -z $VSCODE_INJECTION && -z $INSIDE_EMACS && -z $NO_AUTO_TMUX \
+      && ( -z $TMPDIR || $PWD != ${TMPDIR%/}* ) ]]; then
   # Control only comes back here once you detach — at which point exit closes
   # the window, as the old `exec tmux` setup did. A non-zero status means the
   # picker was escaped (or herdr failed to start), so keep the plain shell.
