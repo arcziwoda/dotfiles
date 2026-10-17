@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# Update herdr on this Mac and on every enabled saved SSH machine, moving each
+# running server to the new binary with a live handoff, so pane processes
+# (shells, Claude sessions) keep running.
+#
+#   herdr-up
+#
+# Homebrew installs cannot use `herdr update --handoff`, so locally it is
+# `brew upgrade` followed by `herdr server live-handoff`. Saved machines run a
+# direct install (~/.local/bin/herdr), where herdr's own updater does both.
+# Remaining manual steps from docs/herdr/README.md ("Upgrading herdr") are
+# printed at the end when the local version changed.
+set -euo pipefail
+
+repo=$(cd "$(dirname "$(readlink -f "$0")")/../../.." && pwd)
+
+old=$(herdr --version | awk '{print $2}')
+brew upgrade herdr
+new=$(herdr --version | awk '{print $2}')
+
+server=$(herdr status server | awk '$1 == "version:" { print $2 }')
+if [[ -n $server && $server != "$new" ]]; then
+	echo "==> local server $server -> $new (live handoff)"
+	herdr server live-handoff --import-exe "$(brew --prefix)/bin/herdr" --expected-version "$new"
+	server=$(herdr status server | awk '$1 == "version:" { print $2 }')
+	[[ $server == "$new" ]] || { echo "local server still on $server" >&2; exit 1; }
+fi
+
+if herdr integration status | grep -q '^claude: outdated'; then
+	echo "==> reinstalling the Claude Code integration (rewrites settings.json in the repo)"
+	herdr integration install claude
+fi
+
+# Tab-separated: id, label, ssh target, session, enabled/disabled.
+herdr machine list | while IFS=$'\t' read -r _ label target _ state; do
+	[[ $state == enabled ]] || continue
+	echo "==> machine $label ($target)"
+	# shellcheck disable=SC2016 # expanded on the remote side
+	ssh -o BatchMode=yes -o ConnectTimeout=10 "$target" '
+		h=$HOME/.local/bin/herdr; [ -x "$h" ] || h=herdr
+		"$h" update --handoff
+		if "$h" integration status | grep -q "^claude: outdated"; then
+			"$h" integration install claude
+		fi
+		"$h" status server | grep "^version:"
+	' </dev/null || echo "machine $label: update failed, see above" >&2
+done
+
+if [[ $old != "$new" ]]; then
+	herdr --skill >"$repo/claude/.claude/skills/herdr/SKILL.md"
+	cat <<EOF
+
+herdr $old -> $new. Still to do (docs/herdr/README.md, "Upgrading herdr"):
+  - release notes: https://github.com/herdrdev/herdr/releases/tag/v$new
+  - pinned plugin tags in bootstrap.sh (REVIEWR_TAG, NAVIGATOR_TAG)
+  - render check: docs/herdr/harness/harness.sh
+  - commit the regenerated skill: git -C $repo status
+EOF
+fi

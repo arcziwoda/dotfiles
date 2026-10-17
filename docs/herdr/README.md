@@ -181,6 +181,16 @@ testing by hand, do the same (`env -u HERDR_ENV -u HERDR_SOCKET_PATH …`).
 
 ## Upgrading herdr
 
+`herdr-up` (`bin/.local/bin/herdr-up`) does the routine part in one go:
+`brew upgrade herdr`, the live handoff below, reinstalling the Claude
+integration when `herdr integration status` reports it outdated, then over SSH
+on every enabled saved machine (`herdr machine list`; the OrbStack `kali`
+machine) `herdr update --handoff` plus the same integration check — those run
+a direct install in `~/.local/bin`, where herdr's own updater applies — and
+regenerating the skill. It prints the remaining manual steps (1, 4, 5 below).
+Updates stay manual on purpose: 0.9.2 broke Alt chords, so read the release
+notes before running it.
+
 `brew upgrade herdr` replaces the client; a running server keeps the old
 version until it is replaced. Hooks and the status line keep working in
 between as long as `herdr status` shows `private_protocol_compatible: yes`
