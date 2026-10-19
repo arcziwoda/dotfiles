@@ -18,7 +18,9 @@ auto_switch = false         # written by herdr when a theme is picked in setting
 
 [theme.custom]
 accent = "#c6a0f6"          # mauve, like the current-window pill in tmux
-panel_bg = "#1e2030"        # mantle
+panel_bg = "reset"          # terminal background: Ghostty's background-opacity
+                            # applies only to default-bg cells, so any colour here
+                            # made the tab bar (and modal fills) opaque
 active_row_bg = "#363a4f"   # surface0
 selection_bg = "#494d64"    # surface1
 surface0 = "#363a4f"
