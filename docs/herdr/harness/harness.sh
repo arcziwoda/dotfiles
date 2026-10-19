@@ -48,10 +48,14 @@ start() {
 	tm set-option -t t remain-on-exit on
 	# A copy, not the repo file: herdr writes its own state (release-notes.json
 	# and the like) next to HERDR_CONFIG_PATH, which would land in the repo.
-	mkdir -p "$WORK/config"
+	# Own XDG_STATE_HOME: saved SSH machines live in the client state
+	# (~/.local/state/herdr/client), and with the real one the harness attaches
+	# to the live remote workspaces and resizes their panes.
+	mkdir -p "$WORK/config" "$WORK/state"
 	cp "$REPO/herdr/.config/herdr/config.toml" "$WORK/config/config.toml"
 	tm respawn-pane -k -t t "cd '$REPO' && COLORTERM=truecolor NO_AUTO_TMUX=1 \
-HERDR_CONFIG_PATH='$WORK/config/config.toml' herdr --session $SESSION; \
+XDG_STATE_HOME='$WORK/state' HERDR_CONFIG_PATH='$WORK/config/config.toml' \
+herdr --session $SESSION; \
 echo EXIT=\$?; sleep 3600"
 	for _ in $(seq 1 20); do
 		[[ -S $SOCK ]] && h pane list >/dev/null 2>&1 && return 0
