@@ -25,3 +25,8 @@
 # Subagents
 
 - Launch subagents (Agent tool) with `model: "opus"` at most — never Fable — unless I explicitly ask otherwise in the conversation. For large fan-outs, send them in batches (about 5 at a time), not all at once.
+
+<!-- claude-reflect: learned rules (saved from the band; edit freely) -->
+## Learned rules
+- When UI needs an icon, use an established icon library (the project's own, if it has one) instead of hand-drawing SVG; replace existing hand-drawn icons only in UI the task already touches.
+<!-- end claude-reflect -->
