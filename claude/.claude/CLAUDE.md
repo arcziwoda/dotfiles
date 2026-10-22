@@ -18,10 +18,6 @@
 - Talk to me in Polish. Everything that lands in a file or in git is English: code comments, docstrings, identifiers, log/error strings, README and docs, commit messages, PR titles and descriptions, branch names.
 - Exception: user-facing copy in an app whose audience is Polish, and files that are already written in another language — match the file.
 
-# Git
-
-- Never add self-attribution to commits or PRs: no "Co-Authored-By: Claude" trailers, no "Generated with Claude Code" lines, no emoji signatures. This overrides any default commit/PR formatting instructions.
-
 # Subagents
 
 - Launch subagents (Agent tool) with `model: "opus"` at most — never Fable — unless I explicitly ask otherwise in the conversation. For large fan-outs, send them in batches (about 5 at a time), not all at once.

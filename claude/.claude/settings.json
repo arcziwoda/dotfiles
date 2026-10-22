@@ -208,5 +208,6 @@
   "theme": "custom:catppuccin-macchiato",
   "editorMode": "vim",
   "switchModelsOnFlag": true,
-  "voiceEnabled": true
+  "voiceEnabled": true,
+  "attribution": false
 }
