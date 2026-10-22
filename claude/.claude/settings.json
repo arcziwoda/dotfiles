@@ -1,9 +1,9 @@
 {
+  "cleanupPeriodDays": 365,
   "env": {
     "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/secret-vault"
   },
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
       "mcp__claude_ai_Microsoft_365__chat_message_search",
       "mcp__claude_ai_Microsoft_365__find_meeting_availability",
@@ -57,7 +57,8 @@
       "mcp__claude_ai_Microsoft_365__teams_reply_channel_message",
       "mcp__claude_ai_Microsoft_365__teams_send_channel_message",
       "mcp__claude_ai_Microsoft_365__teams_send_chat_message"
-    ]
+    ],
+    "defaultMode": "auto"
   },
   "hooks": {
     "SessionStart": [
@@ -194,7 +195,6 @@
   },
   "outputStyle": "Direct",
   "language": "Polish",
-  "cleanupPeriodDays": 365,
   "feedbackDrafts": "notify",
   "syntaxHighlightingDisabled": false,
   "promptSuggestionEnabled": false,
