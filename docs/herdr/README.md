@@ -23,14 +23,18 @@ For every Claude Code pane, the agent list renders (herdr `config.toml`,
 
 The right end of the tab bar shows the account quota: `5h 29%  14:50 · 7d 8%`.
 
-Each workspace in the Spaces panel (`[ui.sidebar.spaces]`) gets a third row
-from the `dotfiles.space-status` plugin:
+Each workspace in the Spaces panel (`[ui.sidebar.spaces]`) is one row, with
+tokens from the `dotfiles.space-status` plugin after the name:
 
 ```
-◐ vpp                                state icon, workspace
-  feat/forecast · ↑2                 branch, ahead/behind (herdr built-ins)
-  !3 ?1 ·  #88 approved             $dirty (+staged !modified ?untracked), $pr
+◐ vpp · !3 ?1 ·  #88 approved       state icon, workspace, $dirty
+                                     (+staged !modified ?untracked), $pr
 ```
+
+One row so that ~25 workspaces fit without scrolling: with herdr's branch row
+and a third row for the tokens, a 50-row window showed 10 of 25. When the row
+is too long herdr shortens the workspace name (`construction…`) and keeps the
+tokens whole. The branch is not shown; the navigator and Go To have it.
 
 ## Pieces
 
