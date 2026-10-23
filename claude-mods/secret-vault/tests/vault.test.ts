@@ -255,6 +255,13 @@ describe('in a session', () => {
     expect(result.context?.at(-1)).toContain('«secret:<name>»')
   })
 
+  test('a secret in a failed call is masked in the error the model reads', async ($, on) => {
+    on('tool.call', { tool: 'Bash' }, () => ({ isError: true, result: `bad token ${GH}`, text: `bad token ${GH}` }))
+    const result = await $.tool.call({ tool: 'Bash', command: 'gh auth status' })
+    expect(JSON.stringify(result)).not.toContain(GH)
+    expect(result.deny).toContain(`bad token ${placeholder('github-token-1')}`)
+  })
+
   test('a prompt with a placeholder carries the guide as context, one without does not', async ($, on) => {
     on('prompt.submit', (_$, e) => ({ text: e.text, context: e.context }))
     const plain = await $.prompt.submit({ text: 'hello', wait: false, origin: { kind: 'composer' } })

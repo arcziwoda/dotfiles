@@ -143,7 +143,16 @@ export const register: Register = on => {
     }
     const input = names.length ? mapStrings(e, s => unmask(s, entries)) : e
     const ran = await next(input)
-    if (ran.deny !== undefined || ran.isError) return ran
+    if (ran.deny !== undefined) return ran
+    // An error (a failed command echoing a token, say) is read by the model as
+    // `text`, which the API documents no rewrite of; a deny reaches the model
+    // as an error result too, so the masked text goes back as one.
+    if (ran.isError) {
+      const text = ran.text ?? (typeof ran.result === 'string' ? ran.result : undefined)
+      if (text === undefined) return ran
+      const masked = await absorb($, text)
+      return masked === text ? ran : { deny: `${masked}\n\n${GUIDE}` }
+    }
     const { record, isChanged } = await maskRecord($, ran.result)
     return isChanged ? { result: record as typeof ran.result, context: [...(ran.context ?? []), GUIDE] } : ran
   })
