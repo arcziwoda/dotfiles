@@ -1,5 +1,5 @@
 import { atom, read, update } from 'claude-code'
-import type { ApiContentBlock, EngineInterface, Register } from 'claude-code'
+import type { EngineInterface, Register } from 'claude-code'
 
 import type { VaultEntry } from '../types'
 import { reviewCall } from './review'
@@ -37,33 +37,6 @@ async function absorb($: EngineInterface, text: string): Promise<string> {
   })
   if (added.length) $.ui.toast(`secret-vault: masked ${added.map(e => e.name).join(', ')}`)
   return masked
-}
-
-// Every text a row carries for the model: text blocks, and a tool result's
-// content as a string or as text blocks.
-type MaskedBlocks = { blocks: ApiContentBlock[]; isChanged: boolean }
-
-async function maskBlocks($: EngineInterface, blocks: readonly ApiContentBlock[]): Promise<MaskedBlocks> {
-  let isChanged = false
-  const out: ApiContentBlock[] = []
-  for (const block of blocks) {
-    if (block.type === 'text' && typeof block.text === 'string') {
-      const text = await absorb($, block.text)
-      isChanged ||= text !== block.text
-      out.push(text === block.text ? block : { ...block, text })
-    } else if (block.type === 'tool_result' && typeof block.content === 'string') {
-      const content = await absorb($, block.content)
-      isChanged ||= content !== block.content
-      out.push(content === block.content ? block : { ...block, content })
-    } else if (block.type === 'tool_result' && Array.isArray(block.content)) {
-      const inner: MaskedBlocks = await maskBlocks($, block.content as ApiContentBlock[])
-      isChanged ||= inner.isChanged
-      out.push(inner.isChanged ? { ...block, content: inner.blocks } : block)
-    } else {
-      out.push(block)
-    }
-  }
-  return { blocks: out, isChanged }
 }
 
 // A tool's structured record (what the screen draws and the transcript file
@@ -152,12 +125,9 @@ export const register: Register = on => {
     return next({ ...e, text, ...(context.length ? { context } : {}) })
   })
 
-  // Every row the conversation keeps, main and subagents alike: what the
-  // model reads and what the transcript stores.
-  on('session.append', async ($, e, next) => {
-    const { blocks, isChanged } = await maskBlocks($, e.message.content)
-    return isChanged ? next({ ...e, message: { ...e.message, content: blocks } }) : next(e)
-  })
+  // No session.append hook: the built-in security plugin passes user plugins
+  // over on it (and on prompt.attachment), so rows that are neither a prompt
+  // nor a tool result (an attached file, a hook's output) go unmasked.
 
   // Placeholders in a call's arguments become the real values as it runs,
   // once the person approves; the record it returns is masked again. A

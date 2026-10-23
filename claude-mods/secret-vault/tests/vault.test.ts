@@ -247,24 +247,12 @@ describe('in a session', () => {
     expect(asked).toEqual([])
   })
 
-  test('a secret a tool prints is masked in the row the model reads', async ($, on) => {
-    let stored = ''
-    on('session.append', (_$, e, next) => {
-      stored = JSON.stringify(e.message)
-      return next(e)
-    })
-    // Nothing in the kit stores a row beneath the test, so the append itself
-    // rejects; what reaches the bottom is the row as the plugin rewrote it.
-    await $.session
-      .append({
-        message: { type: 'user', content: [{ type: 'text', text: `found ${AWS} in .env` }] },
-        door: 'tool-result',
-        origin: { kind: 'composer' },
-        uuid: 'row-1',
-      })
-      .catch(() => undefined)
-    expect(stored).toContain(placeholder('aws-key-id-1'))
-    expect(stored).not.toContain(AWS)
+  test('a secret a tool prints is masked in the result the model reads', async ($, on) => {
+    on('tool.call', { tool: 'Bash' }, () => ({ result: { stdout: `found ${AWS} in .env`, stderr: '', interrupted: false } }))
+    const result = await $.tool.call({ tool: 'Bash', command: 'cat .env' })
+    expect(JSON.stringify(result.result)).toContain(placeholder('aws-key-id-1'))
+    expect(JSON.stringify(result.result)).not.toContain(AWS)
+    expect(result.context?.at(-1)).toContain('«secret:<name>»')
   })
 
   test('a prompt with a placeholder carries the guide as context, one without does not', async ($, on) => {
