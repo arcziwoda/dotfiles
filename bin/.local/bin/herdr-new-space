@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Ask for a name, create ~/<name> and open a herdr workspace of that name in it.
+# Bound to prefix m in herdr's config.toml as a popup; the popup closes when
+# this exits. A workspace already labelled <name> is focused instead of
+# getting a duplicate; an existing directory is reused.
+set -euo pipefail
+
+HERDR=${HERDR_BIN_PATH:-herdr}
+
+fail() {
+	printf '%s\n' "$1" >&2
+	read -rsn1 -p 'press any key' || true
+	exit 1
+}
+
+read -rep 'new space: ' name || exit 0
+# Trim surrounding whitespace.
+name=${name#"${name%%[![:space:]]*}"}
+name=${name%"${name##*[![:space:]]}"}
+[[ -n $name ]] || exit 0
+[[ $name != */* && $name != .* ]] || fail "invalid name: $name (no '/', no leading '.')"
+
+id=$("$HERDR" workspace list |
+	jq -r --arg n "$name" 'first(.result.workspaces[] | select(.label == $n) | .workspace_id) // empty')
+if [[ -n $id ]]; then
+	"$HERDR" workspace focus "$id" >/dev/null
+	exit 0
+fi
+
+dir=$HOME/$name
+[[ ! -e $dir || -d $dir ]] || fail "$dir exists and is not a directory"
+mkdir -p "$dir"
+"$HERDR" workspace create --cwd "$dir" --label "$name" --focus >/dev/null

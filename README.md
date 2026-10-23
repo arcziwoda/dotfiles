@@ -83,6 +83,7 @@ Picker sesji jest jednym skryptem — `bin/.local/bin/tmux-sessions` — używan
 | `prefix x` / `z` / `;` | zamknij panel / zoom / poprzedni panel |
 | `Alt-h/j/k/l` | ruch między panelami (bez integracji z nvimem) |
 | `prefix s`, `Alt-s` | herdr-navigator: workspace'y, agenci, katalogi z zoxide; nieotwarty katalog tworzy workspace |
+| `prefix m` | popup z nazwą → tworzy `~/<nazwa>` i workspace w nim (`bin/.local/bin/herdr-new-space`); istniejący o tej nazwie dostaje fokus |
 | `prefix L` | poprzedni workspace (jak `sesh last`) |
 | `prefix t` | wbudowany picker workspace'ów (zapasowy) |
 | `prefix w` | nawigator (workspace'y, taby, agenci) |

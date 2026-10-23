@@ -99,6 +99,15 @@ description = "lazygit"
 width = "90%"
 height = "85%"
 
+# prefix m = name a new space: creates ~/<name> and a workspace there.
+[[keys.command]]
+key = "prefix+m"
+type = "popup"
+command = "exec \"$HOME/.local/bin/herdr-new-space\""
+description = "new space in ~/<name>"
+width = 60
+height = 5
+
 # ── Plugins (installed by bootstrap.sh; configs in plugins/config/) ──────
 [[keys.command]]
 key = "prefix+s"
