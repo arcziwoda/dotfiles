@@ -1,0 +1,48 @@
+{
+  "name": "cc-askpass",
+  "version": "0.2.0",
+  "description": "Lets Claude run commands that ask for a password (sudo, ssh, git): a pane inside Claude Code asks you, and the password never reaches the model",
+  "author": {
+    "name": "GoneTone",
+    "url": "https://github.com/GoneTone"
+  },
+  "homepage": "https://github.com/GoneTone/cc-askpass",
+  "repository": "https://github.com/GoneTone/cc-askpass",
+  "license": "MIT",
+  "keywords": [
+    "sudo",
+    "ssh",
+    "git",
+    "password",
+    "passphrase",
+    "askpass"
+  ],
+  "userConfig": {
+    "remoteHosts": {
+      "type": "boolean",
+      "title": "Remote prompts over ssh",
+      "description": "Answer password prompts from hosts Claude reaches with ssh",
+      "default": true
+    },
+    "excludeHosts": {
+      "type": "string",
+      "multiple": true,
+      "title": "Hosts to leave alone",
+      "description": "Glob patterns of host names; ssh to a matching host runs untouched, so its password prompts stay out of the pane",
+      "default": []
+    },
+    "includeHosts": {
+      "type": "string",
+      "multiple": true,
+      "title": "Hosts for remote prompts",
+      "description": "Glob patterns of host names that get the remote wrappers; any other host runs untouched (local patch)",
+      "default": [
+        "arcziweb",
+        "arcziweb.com",
+        "arcziweb-*",
+        "kali-lab",
+        "orb"
+      ]
+    }
+  }
+}

@@ -1,0 +1,129 @@
+#!/bin/sh
+# cc-askpass helper.
+#
+#   askpass --serve <session id>   Started by the mod: create the session dir and its
+#                                  request FIFO, print "ready<TAB><dir>", then copy every
+#                                  request line to stdout.
+#   askpass <prompt>               Called by sudo/ssh/git as SUDO_ASKPASS/SSH_ASKPASS: send
+#                                  "<pid><TAB><prompt>" to the mod and print its reply.
+
+me=cc-askpass
+umask 077
+
+serve() {
+  # The id becomes a path under the base that gets `rm -rf`: refuse anything but a name.
+  case "$1" in
+    '' | . | .. | */*)
+      echo "$me: invalid session id '$1'" >&2
+      exit 1
+      ;;
+  esac
+  if [ -n "${XDG_RUNTIME_DIR:-}" ]; then
+    base="${XDG_RUNTIME_DIR%/}/$me"
+  else
+    base="/tmp/$me-$(id -u)"
+  fi
+  # A shared /tmp lets another user pre-create the base: refuse anything we do not own.
+  mkdir "$base" 2> /dev/null
+  if [ -L "$base" ] || [ ! -d "$base" ] || [ ! -O "$base" ]; then
+    echo "$me: unsafe runtime dir $base" >&2
+    exit 1
+  fi
+  chmod 700 "$base" || exit 1
+
+  # One dir per Claude Code process: two processes resuming one session must not share it.
+  dir="$base/$1-$PPID"
+  # A restart (the mod reloading) keeps the dir: helpers still waiting have their FIFOs there.
+  if [ -d "$dir" ] && [ ! -L "$dir" ]; then
+    rm -f "$dir/req" "$dir/serve.pid"
+  else
+    rm -rf "$dir"
+    mkdir "$dir" || exit 1
+  fi
+  mkfifo "$dir/req" || exit 1
+  printf '%s\n' "$$" > "$dir/serve.pid"
+  printf 'ready\t%s\n' "$dir"
+
+  # Requests the previous listener read but nobody answered: resend the live ones.
+  for request in "$dir"/request.*; do
+    [ -f "$request" ] || continue
+    pid=${request##*.}
+    if kill -0 "$pid" 2> /dev/null; then
+      cat "$request"
+    else
+      rm -f "$request" "$dir/reply.$pid"
+    fi
+  done
+
+  # Opened read-write so the loop never sees EOF; builtins only, so killing this
+  # shell leaves no child behind.
+  exec 3<> "$dir/req"
+  while IFS= read -r line <&3; do
+    printf '%s\n' "$line"
+  done
+}
+
+ask() {
+  if [ -z "${CC_ASKPASS_DIR:-}" ] || [ ! -d "$CC_ASKPASS_DIR" ]; then
+    echo "$me: CC_ASKPASS_DIR is not set; is the cc-askpass mod loaded in this Claude Code session?" >&2
+    exit 1
+  fi
+  # With the mod gone (disabled mid-session) nothing reads req: fail now instead of waiting.
+  # On a remote host the listener is a relay with relay.pid instead of serve.pid.
+  pidfile=$CC_ASKPASS_DIR/serve.pid
+  [ -e "$pidfile" ] || pidfile=$CC_ASKPASS_DIR/relay.pid
+  if ! IFS= read -r listener < "$pidfile" || ! kill -0 "$listener" 2> /dev/null; then
+    echo "$me: the cc-askpass listener is not running; restart Claude Code or re-enable the mod" >&2
+    exit 1
+  fi
+  reply="$CC_ASKPASS_DIR/reply.$$"
+  request="$CC_ASKPASS_DIR/request.$$"
+  # A helper killed with SIGKILL leaves its files behind for the next owner of its pid.
+  rm -f "$reply" "$request"
+  mkfifo "$reply" || exit 1
+  # Held open read-write before the request goes out, so a reply written early is kept.
+  exec 4<> "$reply"
+
+  # Give up after 10 minutes, the Bash tool's longest timeout. The watchdog checks in
+  # every 5 s so it ends soon after the helper does (and never kills a recycled pid), and
+  # its output goes nowhere: ssh and git read ours until EOF.
+  (
+    i=0
+    while [ "$i" -lt 120 ]; do
+      sleep 5
+      kill -0 "$$" 2> /dev/null || exit 0
+      i=$((i + 1))
+    done
+    kill "$$" 2> /dev/null
+  ) > /dev/null 2>&1 < /dev/null &
+  watchdog=$!
+  trap 'rm -f "$reply" "$request"; kill "$watchdog" 2> /dev/null' EXIT
+  trap 'exit 1' INT TERM HUP
+
+  # Cut well under PIPE_BUF so concurrent helpers' lines never interleave: bytes (LC_ALL=C),
+  # so prompt 1000 + via 1000 + reported 2000 + pid and separators stay under 4096.
+  prompt=$(printf '%s' "$1" | tr '\t\n' '  ' | LC_ALL=C cut -c 1-1000)
+  via=$(printf '%s' "${CC_ASKPASS_VIA:-}" | tr '\t\n' '  ' | LC_ALL=C cut -c 1-1000)
+  reported=${CC_ASKPASS_REPORTED:-}
+  # On the host that runs sudo/ssh itself, the parent's command line is what to show.
+  if [ "${CC_ASKPASS_REMOTE:-}" = 1 ] && [ -z "$reported" ]; then
+    reported=$(ps -o args= -p "$PPID" 2> /dev/null)
+  fi
+  reported=$(printf '%s' "$reported" | tr '\t\n' '  ' | LC_ALL=C cut -c 1-2000)
+  line=$(printf '%s\t%s' "$$" "$prompt")
+  [ -z "$via$reported" ] || line=$(printf '%s\t%s\t%s' "$line" "$via" "$reported")
+  # Kept as a file so a restarted listener can resend it; written to req read-write so a
+  # listener that died meanwhile cannot leave this blocked in open().
+  printf '%s\n' "$line" > "$request" || exit 1
+  printf '%s\n' "$line" 1<> "$CC_ASKPASS_DIR/req" || exit 1
+
+  IFS= read -r pw <&4
+  [ -n "$pw" ] || exit 1
+  printf '%s\n' "$pw"
+}
+
+if [ "${1:-}" = --serve ]; then
+  serve "$2"
+else
+  ask "${1:-}"
+fi
