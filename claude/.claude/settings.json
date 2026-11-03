@@ -1,7 +1,8 @@
 {
   "cleanupPeriodDays": 365,
   "env": {
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods"
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods",
+    "PLAYWRIGHT_MCP_ISOLATED": "true"
   },
   "attribution": {
     "commit": "",
