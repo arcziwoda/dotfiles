@@ -3,6 +3,11 @@
   "env": {
     "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/secret-vault"
   },
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
   "permissions": {
     "allow": [
       "mcp__claude_ai_Microsoft_365__chat_message_search",
@@ -168,31 +173,15 @@
   "enabledPlugins": {
     "frontend-design@claude-plugins-official": true,
     "context7@claude-plugins-official": true,
-    "skill-creator@claude-plugins-official": true,
     "playwright@claude-plugins-official": true,
     "claude-md-management@claude-plugins-official": true,
     "security-guidance@claude-plugins-official": true,
-    "claude-code-setup@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
     "jdtls-lsp@claude-plugins-official": true,
-    "cc-plugin-you-should-know@builtin": true,
-    "reflect-mod@claude-reflect-marketplace": true
+    "cc-plugin-you-should-know@builtin": true
   },
-  "extraKnownMarketplaces": {
-    "claude-code-filetree": {
-      "source": {
-        "source": "github",
-        "repo": "data-goblin/claude-code-filetree"
-      }
-    },
-    "claude-reflect-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "BayramAnnakov/claude-reflect"
-      }
-    }
-  },
+  "extraKnownMarketplaces": {},
   "outputStyle": "Direct",
   "language": "Polish",
   "feedbackDrafts": "notify",
@@ -208,6 +197,5 @@
   "theme": "custom:catppuccin-macchiato",
   "editorMode": "vim",
   "switchModelsOnFlag": true,
-  "voiceEnabled": true,
-  "attribution": false
+  "voiceEnabled": true
 }
