@@ -12,8 +12,9 @@
 import type { AgentInfo, EngineInterface, Register } from 'claude-code'
 
 const SOURCE = 'dotfiles:claude-agents'
-// Nerd Font U+F0C0 (users): JetBrains Mono Nerd Font has it, unlike ↳ or ⇄.
-const AGENTS_GLYPH = ''
+// Nerd Font U+EBBA (codicon type-hierarchy-sub): JetBrains Mono Nerd Font has it,
+// unlike ↳ or ⇄, which Ghostty would draw from a fallback font.
+const AGENTS_GLYPH = '\uebba'
 const ACTIVE = new Set(['pending', 'running', 'waiting', 'idle'])
 // turn.start/turn.complete fire for subagent loops too; the poll covers an
 // agent that finishes while no turn event follows.

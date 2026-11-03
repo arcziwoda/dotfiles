@@ -11,10 +11,10 @@ describe('tokensOf', () => {
 
   test('counts live agents and leaves out finished ones', async () => {
     const tokens = tokensOf([agent('running'), agent('pending'), agent('idle'), agent('completed'), agent('failed'), agent('killed')])
-    expect(tokens).toEqual({ agents: ' 3', agents_waiting: '' })
+    expect(tokens).toEqual({ agents: '\uebba 3', agents_waiting: '' })
   })
 
   test('waiting agents count in both tokens', async () => {
-    expect(tokensOf([agent('waiting'), agent('running'), agent('waiting')])).toEqual({ agents: ' 3', agents_waiting: '?2' })
+    expect(tokensOf([agent('waiting'), agent('running'), agent('waiting')])).toEqual({ agents: '\uebba 3', agents_waiting: '?2' })
   })
 })

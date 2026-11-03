@@ -103,7 +103,7 @@ populate() {
 	# What the herdr-agents mod (claude-mods/herdr-agents) reports for a session
 	# with three live subagents, one of them waiting.
 	h pane report-metadata "$p3" --source dotfiles:claude-agents --seq 1 \
-		--token "agents=$(printf '\xef\x83\x80') 3" --token "agents_waiting=?1" >/dev/null
+		--token "agents=$(printf '\xee\xae\xba') 3" --token "agents_waiting=?1" >/dev/null
 	# herdr needs about a second to classify the prompt as blocked.
 	local status
 	for _ in $(seq 1 20); do
