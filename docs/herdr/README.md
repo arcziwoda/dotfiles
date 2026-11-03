@@ -15,7 +15,8 @@ For every Claude Code pane, the agent list renders (herdr `config.toml`,
 `[ui.sidebar.agents.rows_by_agent].claude`):
 
 ```
-◐ dotfiles · 2                       state icon, workspace, tab
+◐ dotfiles · 2 ·  3 · ?1            state icon, workspace, tab, $agents,
+                                     $agents_waiting (only while subagents live)
   Refactor forecast ingestion…       $task   session title, cut at a word
    Bash        · Sonnet 4.6     state_text (waiting / working / done)
                                                + $model, right-aligned
@@ -46,6 +47,7 @@ tokens whole. The branch is not shown; the navigator and Go To have it.
 | `herdr/.config/herdr/local-plugins/space-status/` | Our herdr plugin (`dotfiles.space-status`). Reports `$dirty` and `$pr` per workspace on startup, `workspace.focused` and `pane.agent_status_changed`; see the header of `refresh.sh` |
 | `zsh/.config/zsh/herdr-space.zsh` | `precmd` inside herdr: refreshes `$dirty` of the pane's workspace after every command, in the background |
 | `herdr/.config/herdr/claude-quota.sh` | Tab-bar `command` entry. Reads `~/.cache/claude/rate-limits` (written by `statusline.sh`) |
+| `claude-mods/herdr-agents/` | Claude Code mod (loaded from `claude-mods/` by `CLAUDE_CODE_PLUGIN_DIRS`). Publishes `$agents` (live subagents, Nerd Font U+F0C0) and `$agents_waiting` with source `dotfiles:claude-agents`, read from `$.agent.list()` on `turn.start`/`turn.complete` and every 10 s while agents live; clears both on session end |
 | `claude/.claude/hooks/worktree-context.sh` | `SessionStart` hook: in a linked git worktree (e.g. herdr `prefix G`), tells Claude its branch, the main checkout to leave alone, and which gitignored files are missing. Silent elsewhere |
 | `~/.claude/hooks/herdr-agent-state.sh` | **herdr's** Claude integration (`herdr integration install claude`, run by `bootstrap.sh`, not in the repo). Reports the session id so herdr resumes the conversation after a server restart |
 | `claude/.claude/skills/herdr/SKILL.md` | Output of `herdr --skill`: lets Claude drive herdr panes. Regenerate after upgrades |
@@ -72,7 +74,11 @@ Claude Code ──status line JSON──▶ statusline.sh ──report-metadata�
 ```
 
 All reports use `herdr pane report-metadata $HERDR_PANE_ID`, with source
-`dotfiles:claude-statusline` (status line) or `dotfiles:claude-hooks` (hook). Everything is a no-op unless `HERDR_ENV=1`, so the same scripts run
+`dotfiles:claude-statusline` (status line), `dotfiles:claude-hooks` (hook) or
+`dotfiles:claude-agents` (the herdr-agents mod; a mod, not a settings hook,
+because `$.agent.list()` gives the live set directly — `SubagentStart`/
+`SubagentStop` command hooks would need a counter file and miss teammates, and
+in a mod the `classic.*` events are bypassed for user plugins on a Team account). Everything is a no-op unless `HERDR_ENV=1`, so the same scripts run
 harmlessly under tmux.
 
 ### Why state labels

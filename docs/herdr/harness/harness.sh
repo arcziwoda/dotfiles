@@ -100,6 +100,10 @@ populate() {
 	hook "$p1" '{"hook_event_name":"Stop"}'
 	hook "$p2" '{"hook_event_name":"PermissionRequest","tool_name":"Bash","tool_input":{"command":"npm run migrate","description":"Check comment-back on source PR before merging"}}'
 	hook "$p3" '{"hook_event_name":"PreToolUse","tool_name":"Bash","tool_input":{"command":"x","description":"Find state label handling in herdr sidebar source"}}'
+	# What the herdr-agents mod (claude-mods/herdr-agents) reports for a session
+	# with three live subagents, one of them waiting.
+	h pane report-metadata "$p3" --source dotfiles:claude-agents --seq 1 \
+		--token "agents=$(printf '\xef\x83\x80') 3" --token "agents_waiting=?1" >/dev/null
 	# herdr needs about a second to classify the prompt as blocked.
 	local status
 	for _ in $(seq 1 20); do

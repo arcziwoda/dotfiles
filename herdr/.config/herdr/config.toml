@@ -181,7 +181,9 @@ rows = [
 
 [ui.sidebar.agents.rows_by_agent]
 claude = [
-  ["state_icon", "workspace", "tab"],
+  # $agents / $agents_waiting: live subagents and how many of them wait, from
+  # the herdr-agents mod in ~/dotfiles/claude-mods (absent while there are none).
+  ["state_icon", "workspace", "tab", { token = "$agents", fg = "#c6a0f6" }, { token = "$agents_waiting", fg = "#f5a97f" }],
   [{ token = "$task", fg = "#b8c0e0" }],
   # From ~/.claude/hooks/herdr-status.sh, reported as state labels so herdr
   # picks the one for the state it detects: waiting / working / finished.

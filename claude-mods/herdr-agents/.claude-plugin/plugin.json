@@ -1,0 +1,5 @@
+{
+  "name": "herdr-agents",
+  "version": "0.1.0",
+  "description": "Inside a herdr pane, shows how many subagents the session is running and how many wait, as tokens in herdr's sidebar."
+}
