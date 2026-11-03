@@ -20,6 +20,7 @@
 - **Before a session ends:** write decisions, conventions and context agreed in the session into the repo (docs, CLAUDE.md) so the next session starts from them — memory alone is not enough.
 - **Playwright screenshots** go to `<cwd>/.playwright-mcp/`, never to the scratchpad (writes there are rejected).
 - **Waiting:** never `sleep N` and then check; wait on a condition with an `until` loop or the Monitor tool.
+- **GitHub accounts:** `gh` is a wrapper that picks the account from the target repo's owner. Do not prefix `GH_TOKEN=$(gh auth token ...)` and do not run `gh auth switch`; pass `-R OWNER/REPO` when working outside the repo's directory.
 
 # Language
 

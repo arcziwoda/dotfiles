@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+# gh wrapper: picks the GitHub account from the target repo's owner and exports
+# GH_TOKEN for this one call, so the active `gh auth` account never has to be
+# switched and commands need no GH_TOKEN=$(gh auth token --user ...) prefix.
+#
+# The owner -> account map lives OUTSIDE this public repo:
+#   ${XDG_CONFIG_HOME:-$HOME/.config}/gh/accounts
+# One `owner=account` pair per line, `#` starts a comment, owners match
+# case-insensitively. Example:
+#   my-employer-org=my-work-login
+#   my-github-user=my-github-user
+# Each account must be logged in once: gh auth login (then gh auth status).
+#
+# Owner resolution, first match wins:
+#   1. -R/--repo OWNER/REPO (also HOST/OWNER/REPO and --repo=...)
+#   2. `gh api` paths: repos/OWNER/..., orgs/OWNER/..., users/OWNER/...
+#   3. `gh repo <clone|view|fork|...> OWNER/REPO`
+#   4. the `origin` remote of the current git repo
+# The call passes through unchanged when GH_TOKEN or GITHUB_TOKEN is already set,
+# for `gh auth ...`, when the map file is missing, or when no owner maps.
+
+set -u
+
+self=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/$(basename "${BASH_SOURCE[0]}")
+real=""
+while IFS= read -r candidate; do
+  resolved=$(cd "$(dirname "$candidate")" && pwd -P)/$(basename "$candidate")
+  if [[ "$resolved" != "$self" ]]; then real=$candidate; break; fi
+done < <(type -ap gh)
+if [[ -z "$real" ]]; then
+  echo "gh wrapper: no real gh found in PATH" >&2
+  exit 127
+fi
+
+map="${XDG_CONFIG_HOME:-$HOME/.config}/gh/accounts"
+
+if [[ -n "${GH_TOKEN:-}" || -n "${GITHUB_TOKEN:-}" || "${1:-}" == "auth" || ! -r "$map" ]]; then
+  exec "$real" "$@"
+fi
+
+owner_from_slug() { # OWNER/REPO or HOST/OWNER/REPO -> OWNER
+  local slug=$1
+  IFS=/ read -r -a parts <<<"$slug"
+  case ${#parts[@]} in
+    2) printf '%s' "${parts[0]}" ;;
+    3) printf '%s' "${parts[1]}" ;;
+  esac
+}
+
+owner=""
+args=("$@")
+for ((i = 0; i < ${#args[@]}; i++)); do
+  case "${args[i]}" in
+    -R | --repo) owner=$(owner_from_slug "${args[i + 1]:-}"); break ;;
+    --repo=*) owner=$(owner_from_slug "${args[i]#--repo=}"); break ;;
+  esac
+done
+
+if [[ -z "$owner" && "${1:-}" == "api" ]]; then
+  for arg in "${args[@]:1}"; do
+    if [[ "$arg" =~ ^/?(repos|orgs|users)/([^/?]+) ]]; then owner=${BASH_REMATCH[2]}; break; fi
+  done
+fi
+
+if [[ -z "$owner" && "${1:-}" == "repo" && -n "${3:-}" && "$3" != -* ]]; then
+  owner=$(owner_from_slug "$3")
+fi
+
+if [[ -z "$owner" ]]; then
+  url=$(git config --get remote.origin.url 2>/dev/null || true)
+  url=${url%.git}
+  if [[ "$url" =~ [:/]([^/:]+)/[^/]+$ ]]; then owner=${BASH_REMATCH[1]}; fi
+fi
+
+account=""
+if [[ -n "$owner" ]]; then
+  want=$(printf '%s' "$owner" | tr '[:upper:]' '[:lower:]')
+  while IFS='=' read -r key value; do
+    key=$(printf '%s' "${key%%#*}" | tr -d '[:space:]' | tr '[:upper:]' '[:lower:]')
+    value=$(printf '%s' "${value%%#*}" | tr -d '[:space:]')
+    [[ -z "$key" || -z "$value" ]] && continue
+    if [[ "$key" == "$want" ]]; then account=$value; break; fi
+  done <"$map"
+fi
+
+if [[ -n "$account" ]]; then
+  if token=$("$real" auth token --user "$account" 2>/dev/null) && [[ -n "$token" ]]; then
+    GH_TOKEN=$token exec "$real" "$@"
+  fi
+  echo "gh wrapper: account '$account' (for owner '$owner') is not logged in; using the active account" >&2
+fi
+
+exec "$real" "$@"
