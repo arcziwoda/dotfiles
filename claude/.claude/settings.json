@@ -1,7 +1,7 @@
 {
   "cleanupPeriodDays": 365,
   "env": {
-    "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods/secret-vault"
+    "CLAUDE_CODE_PLUGIN_DIRS": "~/dotfiles/claude-mods"
   },
   "attribution": {
     "commit": "",
