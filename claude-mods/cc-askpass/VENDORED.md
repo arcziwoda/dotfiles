@@ -38,5 +38,7 @@ any host nobody listed. The patch adds an allow-list:
 - No network code, no dependencies, no build step on macOS.
 - Same-user weakness: the model's own commands run as the same user, so a command can call
   `$SUDO_ASKPASS` itself or race for the FIFO. The pane names who asks (`Asked by:`,
-  `Claude ran:`). Answer only a pane whose heading is sudo, ssh or git and whose command
-  you recognise.
+  `Claude ran:`), but the helper is recognised by its argv (`isOurHelper` in
+  `hooks/core.ts`), which any same-user process can imitate, so those lines are a hint,
+  not proof. Answer only a pane whose heading is sudo, ssh or git and whose command you
+  recognise as one you expect to need a password.
