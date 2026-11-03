@@ -181,7 +181,14 @@
     "jdtls-lsp@claude-plugins-official": true,
     "cc-plugin-you-should-know@builtin": true
   },
-  "extraKnownMarketplaces": {},
+  "extraKnownMarketplaces": {
+    "spring-tools-marketplace": {
+      "source": {
+        "source": "url",
+        "url": "https://cdn.spring.io/spring-tools/release/claude-plugins/marketplace.json"
+      }
+    }
+  },
   "outputStyle": "Direct",
   "language": "Polish",
   "feedbackDrafts": "notify",
