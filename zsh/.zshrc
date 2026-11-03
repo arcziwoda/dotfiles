@@ -2,6 +2,17 @@
 
 BREW_PREFIX=/opt/homebrew
 
+# ── Claude Code ────────────────────────────────────────────────────────
+# Claude Code sources this file once and snapshots its aliases/functions into
+# every Bash tool call. Aliases over POSIX commands (cd=z, ls=eza, diff=difft,
+# cat=bat) silently change semantics there: `diff` exits 0 on differing files,
+# `cd missing-dir` can jump elsewhere via zoxide, `ls -t` fails under eza.
+# Give it a plain shell: keep tool versions (mise), skip everything interactive.
+if [[ -n $CLAUDECODE ]]; then
+  eval "$(mise activate zsh)"
+  return
+fi
+
 # ── History ────────────────────────────────────────────────────────────
 HISTFILE="$XDG_STATE_HOME/zsh/history"
 [[ -d ${HISTFILE:h} ]] || mkdir -p ${HISTFILE:h}
