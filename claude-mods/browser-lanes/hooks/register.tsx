@@ -123,6 +123,9 @@ export const register: Register = on => {
     const lane = await read($, holder)
     const isDriving = lane !== null && Date.now() - lane.last <= IDLE_MS
     const queue = await read($, waiting)
+    // Local patch (see VENDORED.md): a server with no browser open, nobody driving and
+    // nobody waiting is every session's normal state, so it draws no band.
+    if (a.state === 'ready' && !isDriving && queue.length === 0) return rest
     const { Text } = $.ui.resolve(e)
     const color = a.state === 'attached' ? 'green' : a.state === 'blocked' ? 'red' : undefined
     const mine = (

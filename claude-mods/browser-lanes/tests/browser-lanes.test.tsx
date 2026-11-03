@@ -28,7 +28,7 @@ const psOut = (argv: string[], under: number) => {
 const BAND = { component: 'AbovePrompt', props: { hasSurvey: false, isWorking: false, maxRows: 10, bodyColumns: 120 } }
 
 // Stands for the engine beneath the mod: records what the browser tools were called with.
-function engine(on: any, other?: object, files: Record<string, string> = {}, beneath?: unknown) {
+function engine(on: any, other?: object, files: Record<string, string> = {}, beneath?: unknown, psText = ps(102)) {
   const ran: any[] = []
   resetBandOrder()
   on('env.get', (_$: any, e: any) => ({ value: e.name === 'HOME' ? '/home/me' : undefined }))
@@ -47,7 +47,7 @@ function engine(on: any, other?: object, files: Record<string, string> = {}, ben
   on('command.register', () => ({ value: undefined }))
   on('process.run', (_$: any, e: any) => {
     const [cmd] = e.argv as string[]
-    const stdout = cmd === 'sh' ? '100\n' : cmd === 'ps' ? ps(102) : ''
+    const stdout = cmd === 'sh' ? '100\n' : cmd === 'ps' ? psText : ''
     return { value: { exitCode: 0, stdout, stderr: '' } }
   })
   return { ran, toasts }
@@ -200,6 +200,17 @@ describe('browser-lanes', () => {
     const { ran } = engine(on)
     await $.tool.call({ tool: 'Read', file_path: '/a' } as any)
     expect(ran).toHaveLength(1)
+  })
+
+  // Local patch: an idle ready state draws nothing.
+  test('no band while the browser is not open and nobody drives or waits', async ($, on) => {
+    engine(on, undefined, {}, undefined, ps(202, true)) // our server is isolated, the only Chrome is another session's
+    await $.session.start({ cwd: '/work', surface: 'terminal', isInteractive: true } as any)
+    await new Promise(done => (globalThis as any).setTimeout(done, 20)) // the attachment check runs in the background
+    const ui = await $.ui.mount({ plugin: 'browser-lanes', surface: 'terminal', ...BAND } as any)
+    expect(await ui.find({ type: 'Text', text: /browser:/ })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: /band below/ })).toBeDefined()
+    await ui.unmount()
   })
 
   test('follows the band order file', async ($, on) => {
