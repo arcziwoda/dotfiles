@@ -2,8 +2,13 @@
 
 Source: https://github.com/hamzafer/claude-code-mods, folder `mods/browser-lanes/` (v0.1.3),
 repo commit `5cef0d32daad002b7936920e47a317fd2fd066f0` (2026-11-01; the folder last changed
-in `e839261`, 2026-10-15). MIT, see `LICENSE`. Copied unchanged.
-Update only by re-auditing a newer commit and replacing the files.
+in `e839261`, 2026-10-15). MIT, see `LICENSE`.
+Update only by re-auditing a newer commit, replacing the files and re-applying the patch.
+
+Local patch: the band above the prompt is drawn only when there is something to see (a
+browser open, a clash, an agent driving or one waiting). The idle `ready` state, which
+every session with the Playwright MCP sits in, draws nothing. See the `ui.render` hook in
+`hooks/register.tsx` and its test in `tests/browser-lanes.test.tsx`.
 
 Pairs with `PLAYWRIGHT_MCP_ISOLATED=true` in the `env` of `claude/.claude/settings.json`:
 every session's Playwright MCP then runs an in-memory profile, which removes the
