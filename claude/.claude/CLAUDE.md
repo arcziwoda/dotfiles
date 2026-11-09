@@ -21,6 +21,7 @@
 - **Playwright screenshots** go to `<cwd>/.playwright-mcp/`, never to the scratchpad (writes there are rejected).
 - **Waiting:** never `sleep N` and then check; wait on a condition with an `until` loop or the Monitor tool.
 - **sudo and passwords:** run `sudo` normally, without `-n` or `-S`, and never pipe a password into a command. The cc-askpass mod shows a pane where I type it.
+- **Interactive testing through herdr:** when a task needs something run interactively — testing a skill or slash command in a real Claude Code session, driving a TUI, answering prompts, watching a long-running process — use herdr through the `herdr` skill without waiting for me to mention herdr. Work only in tabs/panes you create, and close them when done. Requires `HERDR_ENV=1`; outside herdr, say so instead of falling back to the live session.
 - **GitHub accounts:** `gh` is a wrapper that picks the account from the target repo's owner. Do not prefix `GH_TOKEN=$(gh auth token ...)` and do not run `gh auth switch`; pass `-R OWNER/REPO` when working outside the repo's directory.
 
 # Language
